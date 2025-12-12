@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "avatar-1",
+      "description": "Avatar of Sarah Johnson",
+      "imageUrl": "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc2NTQzNjIwMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman portrait"
+    },
+    {
+      "id": "avatar-2",
+      "description": "Avatar of Michael Chen",
+      "imageUrl": "https://images.unsplash.com/photo-1636377985931-898218afd306?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjU0ODExODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "avatar-3",
+      "description": "Avatar of Emily Rodriguez",
+      "imageUrl": "https://images.unsplash.com/photo-1679611978819-f10168367155?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHx3b21hbiUyMGZhY2V8ZW58MHx8fHwxNzY1NDg3MTk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman face"
+    },
+    {
+      "id": "avatar-4",
+      "description": "Avatar of David Lee",
+      "imageUrl": "https://images.unsplash.com/photo-1583692331507-fc0bd348695d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxtYW4lMjBmYWNlfGVufDB8fHx8MTc2NTU0MTA3Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man face"
+    },
+    {
+      "id": "avatar-5",
+      "description": "Avatar of Jessica Williams",
+      "imageUrl": "https://images.unsplash.com/photo-1635131902146-6957477a4ff4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxwZXJzb24lMjBzbWlsaW5nfGVufDB8fHx8MTc2NTQ3Njg1M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person smiling"
+    },
+    {
+      "id": "user-avatar",
+      "description": "Avatar of current user, Alex Green",
+      "imageUrl": "https://images.unsplash.com/photo-1560250097-0b93528c311a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBoZWFkc2hvdHxlbnwwfHx8fDE3NjU0NTc1NjJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "professional headshot"
+    }
+  ]
 }
