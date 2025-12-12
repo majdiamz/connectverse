@@ -38,7 +38,9 @@ const ConversationList = ({ onSelectConversation }: { onSelectConversation: (con
                 <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
                 <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+              <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
+                <ChannelIcon channel={conv.channel} className="h-3 w-3" />
+              </div>
             </div>
             <div className="flex-1 overflow-hidden">
               <div className="flex items-center justify-between">
