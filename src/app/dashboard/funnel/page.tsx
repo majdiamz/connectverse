@@ -20,7 +20,13 @@ const columnTitles: { [key in Customer['status']]: string } = {
 };
 
 const CustomerCard = ({ customer }: { customer: Customer }) => (
-  <Card className="mb-4">
+  <Card 
+    className="mb-4 cursor-grab active:cursor-grabbing"
+    draggable
+    onDragStart={(e) => {
+      e.dataTransfer.setData('customerId', customer.id);
+    }}
+  >
     <CardContent className="p-4">
       <div className="flex items-center gap-3 mb-3">
         <Avatar className="h-10 w-10">
@@ -44,8 +50,25 @@ const CustomerCard = ({ customer }: { customer: Customer }) => (
   </Card>
 );
 
-const FunnelColumn = ({ status, customers }: { status: Customer['status'], customers: Customer[] }) => (
-  <div className="flex-shrink-0 w-80">
+const FunnelColumn = ({ 
+  status, 
+  customers,
+  onDrop,
+}: { 
+  status: Customer['status'], 
+  customers: Customer[],
+  onDrop: (customerId: string, newStatus: Customer['status']) => void,
+}) => (
+  <div 
+    className="flex-shrink-0 w-80"
+    onDragOver={(e) => e.preventDefault()}
+    onDrop={(e) => {
+      const customerId = e.dataTransfer.getData('customerId');
+      if (customerId) {
+        onDrop(customerId, status);
+      }
+    }}
+  >
       <Card className="bg-muted/50 h-full">
           <CardHeader>
               <CardTitle className="text-base capitalize flex items-center justify-between">
@@ -68,6 +91,14 @@ const FunnelColumn = ({ status, customers }: { status: Customer['status'], custo
 export default function FunnelPage() {
   const [customers, setCustomers] = useState<Customer[]>(getCustomers());
 
+  const handleDrop = (customerId: string, newStatus: Customer['status']) => {
+    setCustomers(prevCustomers => 
+      prevCustomers.map(c => 
+        c.id === customerId ? { ...c, status: newStatus } : c
+      )
+    );
+  };
+
   const customersByStatus = columns.reduce((acc, status) => {
     acc[status] = customers.filter(c => c.status === status);
     return acc;
@@ -79,7 +110,12 @@ export default function FunnelPage() {
           <ScrollArea className="w-full h-full whitespace-nowrap">
               <div className="flex gap-6 p-4 h-full">
                   {columns.map(status => (
-                      <FunnelColumn key={status} status={status} customers={customersByStatus[status]} />
+                      <FunnelColumn 
+                        key={status} 
+                        status={status} 
+                        customers={customersByStatus[status]}
+                        onDrop={handleDrop}
+                      />
                   ))}
               </div>
               <ScrollBar orientation="horizontal" />
