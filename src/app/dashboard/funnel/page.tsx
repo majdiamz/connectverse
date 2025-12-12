@@ -8,6 +8,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ChannelIcon } from '@/components/icons';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const columns: Customer['status'][] = ['new', 'contacted', 'qualified', 'demo', 'unqualified'];
 
@@ -19,8 +20,16 @@ const columnTitles: { [key in Customer['status']]: string } = {
   unqualified: 'Unqualified',
 };
 
+const statusColors: { [key in Customer['status']]: string } = {
+  new: 'bg-blue-500',
+  contacted: 'bg-yellow-500',
+  qualified: 'bg-green-500',
+  unqualified: 'bg-red-500',
+  demo: 'bg-purple-500',
+};
+
 const CustomerCard = ({ customer }: { customer: Customer }) => (
-  <Card 
+  <Card
     className="mb-4 cursor-grab active:cursor-grabbing"
     draggable
     onDragStart={(e) => {
@@ -39,27 +48,33 @@ const CustomerCard = ({ customer }: { customer: Customer }) => (
         </div>
         <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
       </div>
-      <div className="flex flex-wrap gap-1">
-        {customer.tags.map((tag) => (
-          <Badge key={tag} variant="secondary">
-            {tag}
-          </Badge>
-        ))}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-1">
+          {customer.tags.map((tag) => (
+            <Badge key={tag} variant="secondary">
+              {tag}
+            </Badge>
+          ))}
+        </div>
+        <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
+            <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
+            {customer.status}
+        </Badge>
       </div>
     </CardContent>
   </Card>
 );
 
-const FunnelColumn = ({ 
-  status, 
+const FunnelColumn = ({
+  status,
   customers,
   onDrop,
-}: { 
-  status: Customer['status'], 
+}: {
+  status: Customer['status'],
   customers: Customer[],
   onDrop: (customerId: string, newStatus: Customer['status']) => void,
 }) => (
-  <div 
+  <div
     className="flex-shrink-0 w-80"
     onDragOver={(e) => e.preventDefault()}
     onDrop={(e) => {
@@ -92,8 +107,8 @@ export default function FunnelPage() {
   const [customers, setCustomers] = useState<Customer[]>(getCustomers());
 
   const handleDrop = (customerId: string, newStatus: Customer['status']) => {
-    setCustomers(prevCustomers => 
-      prevCustomers.map(c => 
+    setCustomers(prevCustomers =>
+      prevCustomers.map(c =>
         c.id === customerId ? { ...c, status: newStatus } : c
       )
     );
@@ -110,9 +125,9 @@ export default function FunnelPage() {
           <ScrollArea className="w-full h-full whitespace-nowrap">
               <div className="flex gap-6 p-4 h-full">
                   {columns.map(status => (
-                      <FunnelColumn 
-                        key={status} 
-                        status={status} 
+                      <FunnelColumn
+                        key={status}
+                        status={status}
                         customers={customersByStatus[status]}
                         onDrop={handleDrop}
                       />
