@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, startTransition } from "react";
 import { useSearchParams } from 'next/navigation'
 import type { Conversation, Message, Customer } from "@/lib/data";
 import { getConversations, currentUser } from "@/lib/data";
@@ -182,8 +182,16 @@ function InboxPageContent() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   useEffect(() => {
-    const initialConversation = conversationsData.find(c => c.id === conversationId) || conversationsData[0];
-    setSelectedConversation(initialConversation);
+    startTransition(() => {
+      const initialConversation = conversationsData.find(c => c.id === conversationId);
+      if (initialConversation) {
+        setSelectedConversation(initialConversation);
+      } else if (conversationId === null) {
+        setSelectedConversation(conversationsData[0]);
+      } else {
+        setSelectedConversation(null);
+      }
+    });
   }, [conversationId]);
 
   return (
