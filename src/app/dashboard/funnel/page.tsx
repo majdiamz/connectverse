@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import type { Customer } from '@/lib/data';
-import { getCustomers } from '@/lib/data';
+import type { Customer, Conversation } from '@/lib/data';
+import { getCustomers, getConversations } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ChannelIcon } from '@/components/icons';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const columns: Customer['status'][] = ['new', 'contacted', 'qualified', 'demo', 'unqualified'];
 
@@ -28,50 +30,65 @@ const statusColors: { [key in Customer['status']]: string } = {
   demo: 'bg-purple-500',
 };
 
-const CustomerCard = ({ customer }: { customer: Customer }) => (
-  <Card
-    className="mb-4 cursor-grab active:cursor-grabbing"
-    draggable
-    onDragStart={(e) => {
-      e.dataTransfer.setData('customerId', customer.id);
-    }}
-  >
-    <CardContent className="p-4">
-      <div className="flex items-center gap-3 mb-3">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={customer.avatarUrl} alt={customer.name} />
-          <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <p className="font-semibold">{customer.name}</p>
-          <p className="text-sm text-muted-foreground">{customer.email}</p>
+const CustomerCard = ({ customer, conversationId }: { customer: Customer; conversationId?: string }) => {
+  const router = useRouter();
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('customerId', customer.id);
+  };
+  
+  const handleClick = () => {
+    if (conversationId) {
+      router.push(`/dashboard/inbox?conversationId=${conversationId}`);
+    }
+  };
+
+  return (
+    <Card
+      className="mb-4 cursor-pointer hover:shadow-lg transition-shadow"
+      draggable
+      onDragStart={handleDragStart}
+      onClick={handleClick}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={customer.avatarUrl} alt={customer.name} />
+            <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <p className="font-semibold">{customer.name}</p>
+            <p className="text-sm text-muted-foreground">{customer.email}</p>
+          </div>
+          <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
         </div>
-        <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap gap-1">
-          {customer.tags.map((tag) => (
-            <Badge key={tag} variant="secondary">
-              {tag}
-            </Badge>
-          ))}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-1">
+            {customer.tags.map((tag) => (
+              <Badge key={tag} variant="secondary">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+          <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
+              <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
+              {customer.status}
+          </Badge>
         </div>
-        <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
-            <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
-            {customer.status}
-        </Badge>
-      </div>
-    </CardContent>
-  </Card>
-);
+      </CardContent>
+    </Card>
+  );
+};
 
 const FunnelColumn = ({
   status,
   customers,
+  conversations,
   onDrop,
 }: {
   status: Customer['status'],
   customers: Customer[],
+  conversations: Conversation[],
   onDrop: (customerId: string, newStatus: Customer['status']) => void,
 }) => (
   <div
@@ -93,9 +110,12 @@ const FunnelColumn = ({
           </CardHeader>
           <CardContent className="h-[calc(100%-4rem)]">
               <ScrollArea className="h-full pr-4 -mr-4">
-                {customers.map(customer => (
-                    <CustomerCard key={customer.id} customer={customer} />
-                ))}
+                {customers.map(customer => {
+                  const conversation = conversations.find(c => c.customer.id === customer.id);
+                  return (
+                    <CustomerCard key={customer.id} customer={customer} conversationId={conversation?.id} />
+                  )
+                })}
               </ScrollArea>
           </CardContent>
       </Card>
@@ -105,6 +125,7 @@ const FunnelColumn = ({
 
 export default function FunnelPage() {
   const [customers, setCustomers] = useState<Customer[]>(getCustomers());
+  const [conversations] = useState<Conversation[]>(getConversations());
 
   const handleDrop = (customerId: string, newStatus: Customer['status']) => {
     setCustomers(prevCustomers =>
@@ -129,6 +150,7 @@ export default function FunnelPage() {
                         key={status}
                         status={status}
                         customers={customersByStatus[status]}
+                        conversations={conversations}
                         onDrop={handleDrop}
                       />
                   ))}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from 'next/navigation'
 import type { Conversation, Message, Customer } from "@/lib/data";
 import { getConversations, currentUser } from "@/lib/data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 const conversationsData = getConversations();
 
-const ConversationList = ({ onSelectConversation }: { onSelectConversation: (conv: Conversation) => void; }) => (
+const ConversationList = ({ onSelectConversation, selectedConversationId }: { onSelectConversation: (conv: Conversation) => void; selectedConversationId: string | null }) => (
   <Card className="flex flex-col h-full">
     <CardHeader className="p-4">
       <div className="relative">
@@ -30,7 +31,10 @@ const ConversationList = ({ onSelectConversation }: { onSelectConversation: (con
         {conversationsData.map((conv) => (
           <button
             key={conv.id}
-            className="flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent"
+            className={cn(
+                "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
+                selectedConversationId === conv.id && "bg-accent"
+            )}
             onClick={() => onSelectConversation(conv)}
           >
             <div className="relative">
@@ -171,14 +175,33 @@ const CustomerProfile = ({ customer }: { customer: Customer | null }) => (
   </Card>
 );
 
-export default function InboxPage() {
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(conversationsData[0]);
+function InboxPageContent() {
+  const searchParams = useSearchParams()
+  const conversationId = searchParams.get('conversationId')
+  
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+
+  useEffect(() => {
+    const initialConversation = conversationsData.find(c => c.id === conversationId) || conversationsData[0];
+    setSelectedConversation(initialConversation);
+  }, [conversationId]);
 
   return (
     <div className="h-[calc(100vh-10rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px]">
-      <ConversationList onSelectConversation={setSelectedConversation} />
+      <ConversationList 
+        onSelectConversation={setSelectedConversation} 
+        selectedConversationId={selectedConversation?.id ?? null} 
+      />
       <MessageView conversation={selectedConversation} />
       <CustomerProfile customer={selectedConversation?.customer ?? null} />
     </div>
   );
+}
+
+export default function InboxPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <InboxPageContent />
+    </React.Suspense>
+  )
 }
