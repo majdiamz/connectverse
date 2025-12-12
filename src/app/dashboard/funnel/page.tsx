@@ -1,0 +1,90 @@
+'use client';
+
+import { useState } from 'react';
+import type { Customer } from '@/lib/data';
+import { getCustomers } from '@/lib/data';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { ChannelIcon } from '@/components/icons';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
+const columns: Customer['status'][] = ['new', 'contacted', 'qualified', 'demo', 'unqualified'];
+
+const columnTitles: { [key in Customer['status']]: string } = {
+  new: 'New',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  demo: 'Demo Scheduled',
+  unqualified: 'Unqualified',
+};
+
+const CustomerCard = ({ customer }: { customer: Customer }) => (
+  <Card className="mb-4">
+    <CardContent className="p-4">
+      <div className="flex items-center gap-3 mb-3">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={customer.avatarUrl} alt={customer.name} />
+          <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <p className="font-semibold">{customer.name}</p>
+          <p className="text-sm text-muted-foreground">{customer.email}</p>
+        </div>
+        <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {customer.tags.map((tag) => (
+          <Badge key={tag} variant="secondary">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const FunnelColumn = ({ status, customers }: { status: Customer['status'], customers: Customer[] }) => (
+  <div className="flex-shrink-0 w-80">
+      <Card className="bg-muted/50 h-full">
+          <CardHeader>
+              <CardTitle className="text-base capitalize flex items-center justify-between">
+                <span>{columnTitles[status]}</span>
+                <span className="text-sm font-normal text-muted-foreground bg-background px-2 py-1 rounded-md">{customers.length}</span>
+              </CardTitle>
+          </CardHeader>
+          <CardContent className="h-[calc(100%-4rem)]">
+              <ScrollArea className="h-full pr-4 -mr-4">
+                {customers.map(customer => (
+                    <CustomerCard key={customer.id} customer={customer} />
+                ))}
+              </ScrollArea>
+          </CardContent>
+      </Card>
+  </div>
+);
+
+
+export default function FunnelPage() {
+  const [customers, setCustomers] = useState<Customer[]>(getCustomers());
+
+  const customersByStatus = columns.reduce((acc, status) => {
+    acc[status] = customers.filter(c => c.status === status);
+    return acc;
+  }, {} as { [key in Customer['status']]: Customer[] });
+
+  return (
+    <div className="h-full flex flex-col">
+        <div className="flex-1 -mx-4 -my-8 p-0">
+          <ScrollArea className="w-full h-full whitespace-nowrap">
+              <div className="flex gap-6 p-4 h-full">
+                  {columns.map(status => (
+                      <FunnelColumn key={status} status={status} customers={customersByStatus[status]} />
+                  ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+    </div>
+  );
+}

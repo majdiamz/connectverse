@@ -26,6 +26,8 @@ export function AppHeader() {
         return "Inbox";
       case "/dashboard/customers":
         return "Customers";
+      case "/dashboard/funnel":
+        return "Funnel";
       default:
         return "ConnectVerse";
     }
