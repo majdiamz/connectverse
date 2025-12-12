@@ -6,6 +6,8 @@ export interface User {
   avatarUrl: string;
 }
 
+export type CustomerStatus = 'new' | 'contacted' | 'qualified' | 'unqualified' | 'demo';
+
 export interface Customer {
   id: string;
   name: string;
@@ -15,6 +17,7 @@ export interface Customer {
   joined: string;
   tags: string[];
   channel: Channel;
+  status: CustomerStatus;
 }
 
 export interface Message {
@@ -39,11 +42,11 @@ export const currentUser: User = {
 };
 
 const customers: Customer[] = [
-  { id: "cust_01", name: "Sarah Johnson", email: "sarah.j@example.com", phone: "+1-555-0101", avatarUrl: "https://picsum.photos/seed/101/100/100", joined: "2023-05-12", tags: ["new_lead", "priority"], channel: "whatsapp" },
-  { id: "cust_02", name: "Michael Chen", email: "m.chen@example.com", phone: "+1-555-0102", avatarUrl: "https://picsum.photos/seed/102/100/100", joined: "2023-05-15", tags: ["interested"], channel: "messenger" },
-  { id: "cust_03", name: "Emily Rodriguez", email: "emily.r@example.com", phone: "+1-555-0103", avatarUrl: "https://picsum.photos/seed/103/100/100", joined: "2023-05-20", tags: ["follow_up"], channel: "instagram" },
-  { id: "cust_04", name: "David Lee", email: "david.lee@example.com", phone: "+1-555-0104", avatarUrl: "https://picsum.photos/seed/104/100/100", joined: "2023-06-01", tags: ["demo_scheduled"], channel: "tiktok" },
-  { id: "cust_05", name: "Jessica Williams", email: "jess.w@example.com", phone: "+1-555-0105", avatarUrl: "https://picsum.photos/seed/105/100/100", joined: "2023-06-05", tags: ["new_lead"], channel: "whatsapp" },
+  { id: "cust_01", name: "Sarah Johnson", email: "sarah.j@example.com", phone: "+1-555-0101", avatarUrl: "https://picsum.photos/seed/101/100/100", joined: "2023-05-12", tags: ["priority"], channel: "whatsapp", status: 'new' },
+  { id: "cust_02", name: "Michael Chen", email: "m.chen@example.com", phone: "+1-555-0102", avatarUrl: "https://picsum.photos/seed/102/100/100", joined: "2023-05-15", tags: ["interested"], channel: "messenger", status: 'contacted' },
+  { id: "cust_03", name: "Emily Rodriguez", email: "emily.r@example.com", phone: "+1-555-0103", avatarUrl: "https://picsum.photos/seed/103/100/100", joined: "2023-05-20", tags: ["follow_up"], channel: "instagram", status: 'qualified' },
+  { id: "cust_04", name: "David Lee", email: "david.lee@example.com", phone: "+1-555-0104", avatarUrl: "https://picsum.photos/seed/104/100/100", joined: "2023-06-01", tags: [], channel: "tiktok", status: 'demo' },
+  { id: "cust_05", name: "Jessica Williams", email: "jess.w@example.com", phone: "+1-555-0105", avatarUrl: "https://picsum.photos/seed/105/100/100", joined: "2023-06-05", tags: ["new_lead"], channel: "whatsapp", status: 'new' },
 ];
 
 export const conversations: Conversation[] = [
