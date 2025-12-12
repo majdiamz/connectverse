@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { ChannelIcon } from "@/components/icons";
 
 export default function CustomersPage() {
   const customers = getCustomers();
@@ -51,7 +52,10 @@ export default function CustomersPage() {
                       <AvatarImage src={customer.avatarUrl} alt={customer.name} />
                       <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{customer.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{customer.name}</span>
+                      <ChannelIcon channel={customer.channel} className="h-4 w-4 text-muted-foreground" />
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-muted-foreground">{customer.email}</TableCell>
