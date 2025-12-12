@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from 'next/navigation'
 import type { Conversation, Message, Customer } from "@/lib/data";
 import { getConversations, currentUser } from "@/lib/data";
@@ -200,8 +200,8 @@ function InboxPageContent() {
 
 export default function InboxPage() {
   return (
-    <React.Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       <InboxPageContent />
-    </React.Suspense>
+    </Suspense>
   )
 }
