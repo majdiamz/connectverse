@@ -19,8 +19,10 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Inbox, Send, FileText, Trash2, Archive, Edit, CornerUpLeft, CornerUpRight, Search, Mail as MailIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import ReactQuill from 'react-quill';
+import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 
 
 const EmailList = ({
@@ -147,11 +149,6 @@ const ComposeEmailDialog = ({ onSend }: { onSend: (newEmail: Omit<Email, 'id' | 
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
     const [open, setOpen] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
 
     const handleSend = () => {
         onSend({ subject, body });
@@ -182,23 +179,21 @@ const ComposeEmailDialog = ({ onSend }: { onSend: (newEmail: Omit<Email, 'id' | 
                         <Label htmlFor="subject" className="text-right">Subject</Label>
                         <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="col-span-3" />
                     </div>
-                    {isMounted && (
-                        <ReactQuill 
-                            theme="snow" 
-                            value={body} 
-                            onChange={setBody}
-                            className="h-64 mb-12"
-                            modules={{
-                                toolbar: [
-                                  [{ 'header': [1, 2, false] }],
-                                  ['bold', 'italic', 'underline','strike', 'blockquote'],
-                                  [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-                                  ['link'],
-                                  ['clean']
-                                ],
-                              }}
-                        />
-                    )}
+                    <ReactQuill 
+                        theme="snow" 
+                        value={body} 
+                        onChange={setBody}
+                        className="h-64 mb-12"
+                        modules={{
+                            toolbar: [
+                              [{ 'header': [1, 2, false] }],
+                              ['bold', 'italic', 'underline','strike', 'blockquote'],
+                              [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                              ['link'],
+                              ['clean']
+                            ],
+                          }}
+                    />
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
