@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense, useMemo } from 'react';
+import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Conversation, Message, Customer } from '@/lib/data';
 import { getConversations, currentUser } from '@/lib/data';
@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ChannelIcon } from '@/components/icons';
-import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, SlidersHorizontal, FilterX, Calendar as CalendarIcon } from 'lucide-react';
+import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, SlidersHorizontal, FilterX, Calendar as CalendarIcon, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,6 +23,8 @@ import { format } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const conversationsData = getConversations();
+
+const MESSAGES_PER_PAGE = 10;
 
 const ConversationList = ({ 
     conversations,
@@ -73,74 +75,121 @@ const ConversationList = ({
   </Card>
 );
 
-const MessageView = ({ conversation }: { conversation: Conversation | null }) => (
-  <div className="flex flex-col h-full bg-card border-x">
-    {conversation ? (
-      <>
-        <div className="flex items-center gap-3 border-b p-4">
-            <Avatar className="h-10 w-10">
-                <AvatarImage src={conversation.customer.avatarUrl} alt={conversation.customer.name} />
-                <AvatarFallback>{conversation.customer.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-                <p className="font-semibold">{conversation.customer.name}</p>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <ChannelIcon channel={conversation.channel} className="h-3 w-3" />
-                    <span>{conversation.channel.charAt(0).toUpperCase() + conversation.channel.slice(1)}</span>
-                </div>
-            </div>
-        </div>
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
-            {conversation.messages.map((message) => (
-              <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'user' ? 'justify-end' : '')}>
-                {message.sender === 'customer' && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={conversation.customer.avatarUrl} />
-                    <AvatarFallback>{conversation.customer.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                )}
-                <div className={cn(
-                  "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2",
-                  message.sender === 'user'
-                    ? 'bg-primary text-primary-foreground rounded-br-none'
-                    : 'bg-muted rounded-bl-none'
-                )}>
-                  <p className="text-sm">{message.text}</p>
-                </div>
-                {message.sender === 'user' && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={currentUser.avatarUrl} />
-                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                )}
+const MessageView = ({ conversation }: { conversation: Conversation | null }) => {
+  const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setVisibleMessagesCount(MESSAGES_PER_PAGE);
+    setTimeout(() => {
+        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) {
+            viewport.scrollTop = viewport.scrollHeight;
+        }
+    }, 0);
+  }, [conversation]);
+
+  const handleLoadMore = () => {
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      scrollPositionRef.current = viewport.scrollHeight - viewport.scrollTop;
+    }
+    setVisibleMessagesCount(prev => prev + MESSAGES_PER_PAGE);
+  };
+  
+  useEffect(() => {
+    if (scrollPositionRef.current !== null) {
+      const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight - scrollPositionRef.current;
+        scrollPositionRef.current = null;
+      }
+    }
+  }, [visibleMessagesCount]);
+  
+
+  const messages = conversation?.messages || [];
+  const displayedMessages = messages.slice(Math.max(0, messages.length - visibleMessagesCount));
+  const canLoadMore = visibleMessagesCount < messages.length;
+
+  return (
+    <div className="flex flex-col h-full bg-card border-x">
+      {conversation ? (
+        <>
+          <div className="flex items-center gap-3 border-b p-4">
+              <Avatar className="h-10 w-10">
+                  <AvatarImage src={conversation.customer.avatarUrl} alt={conversation.customer.name} />
+                  <AvatarFallback>{conversation.customer.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div>
+                  <p className="font-semibold">{conversation.customer.name}</p>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <ChannelIcon channel={conversation.channel} className="h-3 w-3" />
+                      <span>{conversation.channel.charAt(0).toUpperCase() + conversation.channel.slice(1)}</span>
+                  </div>
               </div>
-            ))}
           </div>
-        </ScrollArea>
-        <div className="border-t p-4">
-          <div className="relative">
-            <Input placeholder="Type a message..." className="pr-20" />
-            <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-7 w-7">
-                <Paperclip className="h-4 w-4" />
-              </Button>
-              <Button size="icon" className="h-8 w-8">
-                <Send className="h-4 w-4" />
-              </Button>
+          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+             <div className="space-y-4">
+              {canLoadMore && (
+                <div className="text-center">
+                  <Button variant="outline" size="sm" onClick={handleLoadMore}>
+                    <ArrowUp className="h-4 w-4 mr-2" />
+                    Load More
+                  </Button>
+                </div>
+              )}
+              {displayedMessages.map((message) => (
+                <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'user' ? 'justify-end' : '')}>
+                  {message.sender === 'customer' && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={conversation.customer.avatarUrl} />
+                      <AvatarFallback>{conversation.customer.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div className={cn(
+                    "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2",
+                    message.sender === 'user'
+                      ? 'bg-primary text-primary-foreground rounded-br-none'
+                      : 'bg-muted rounded-bl-none'
+                  )}>
+                    <p className="text-sm">{message.text}</p>
+                  </div>
+                  {message.sender === 'user' && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={currentUser.avatarUrl} />
+                      <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <div className="border-t p-4">
+            <div className="relative">
+              <Input placeholder="Type a message..." className="pr-20" />
+              <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-7 w-7">
+                  <Paperclip className="h-4 w-4" />
+                </Button>
+                <Button size="icon" className="h-8 w-8">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
+        </>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+          <MessageSquareDashed className="h-16 w-16 text-muted-foreground/50" />
+          <h3 className="text-xl font-semibold">No conversation selected</h3>
+          <p className="text-muted-foreground">Select a conversation from the list to start chatting.</p>
         </div>
-      </>
-    ) : (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-        <MessageSquareDashed className="h-16 w-16 text-muted-foreground/50" />
-        <h3 className="text-xl font-semibold">No conversation selected</h3>
-        <p className="text-muted-foreground">Select a conversation from the list to start chatting.</p>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
+}
 
 const CustomerProfile = ({ customer }: { customer: Customer | null }) => (
   <Card className="hidden lg:flex lg:flex-col h-full">
@@ -279,10 +328,10 @@ function InboxPageContent() {
             <AccordionItem value="filters" className="border-b-0">
                 <Card>
                     <div className='flex items-center justify-between p-4 border-b'>
-                        <AccordionTrigger className="p-0 hover:no-underline flex-1">
+                         <AccordionTrigger className="p-0 hover:no-underline flex-1">
                             <CardTitle className="text-lg">Filters</CardTitle>
                         </AccordionTrigger>
-                        <Button variant="ghost" size="sm" onClick={resetFilters}>
+                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); resetFilters(); }}>
                             <FilterX className="h-4 w-4 mr-2" />
                             Reset
                         </Button>
@@ -343,3 +392,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    

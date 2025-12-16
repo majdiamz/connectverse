@@ -116,10 +116,28 @@ export const conversations: Conversation[] = [
     channel: "whatsapp",
     unreadCount: 2,
     messages: [
-      { id: "msg_01a", text: "Hello! I'm interested in your services. Can you tell me more?", sender: 'customer', timestamp: "10:30 AM" },
-      { id: "msg_01b", text: "Hi Sarah! Absolutely. We offer a range of solutions. What specifically are you looking for?", sender: 'user', timestamp: "10:31 AM" },
-      { id: "msg_01c", text: "I'm looking for a tool to manage my social media messages.", sender: 'customer', timestamp: "10:32 AM" },
-      { id: "msg_01d", text: "You've come to the right place! ConnectVerse is perfect for that.", sender: 'user', timestamp: "10:33 AM" },
+        { id: "msg_01_01", text: "Hi, I need help with my recent order.", sender: 'customer', timestamp: "12:00 PM" },
+        { id: "msg_01_02", text: "Of course, what is the order number?", sender: 'user', timestamp: "12:01 PM" },
+        { id: "msg_01_03", text: "It's #12345.", sender: 'customer', timestamp: "12:02 PM" },
+        { id: "msg_01_04", text: "Thank you. Let me check that for you.", sender: 'user', timestamp: "12:03 PM" },
+        { id: "msg_01_05", text: "I see the order was delivered yesterday. Is there an issue with it?", sender: 'user', timestamp: "12:05 PM" },
+        { id: "msg_01_06", text: "Yes, one of the items is damaged.", sender: 'customer', timestamp: "12:06 PM" },
+        { id: "msg_01_07", text: "I'm so sorry to hear that. Can you send a photo of the damaged item?", sender: 'user', timestamp: "12:07 PM" },
+        { id: "msg_01_08", text: "Sure, here it is.", sender: 'customer', timestamp: "12:08 PM" },
+        { id: "msg_01_09", text: "Thank you. I'm processing a replacement for you right now.", sender: 'user', timestamp: "12:10 PM" },
+        { id: "msg_01_10", text: "The new order number is #12346. It should arrive in 3-5 business days.", sender: 'user', timestamp: "12:11 PM" },
+        { id: "msg_01_11", text: "Great, thank you for your help!", sender: 'customer', timestamp: "12:12 PM" },
+        { id: "msg_01_12", text: "You're welcome! Is there anything else I can assist you with?", sender: 'user', timestamp: "12:13 PM" },
+        { id: "msg_01_13", text: "No, that's all. Thanks again.", sender: 'customer', timestamp: "12:14 PM" },
+        { id: "msg_01_14", text: "Have a great day!", sender: 'user', timestamp: "12:15 PM" },
+        { id: "msg_01_15", text: "You too!", sender: 'customer', timestamp: "12:16 PM" },
+        { id: "msg_01_16", text: "Hello! I'm interested in your services. Can you tell me more?", sender: 'customer', timestamp: "10:30 AM" },
+        { id: "msg_01_17", text: "Hi Sarah! Absolutely. We offer a range of solutions. What specifically are you looking for?", sender: 'user', timestamp: "10:31 AM" },
+        { id: "msg_01_18", text: "I'm looking for a tool to manage my social media messages.", sender: 'customer', timestamp: "10:32 AM" },
+        { id: "msg_01_19", text: "You've come to the right place! ConnectVerse is perfect for that.", sender: 'user', timestamp: "10:33 AM" },
+        { id: "msg_01_20", text: "Does it support team collaboration?", sender: 'customer', timestamp: "10:34 AM" },
+        { id: "msg_01_21", text: "Yes, it has features for assigning conversations and leaving internal notes.", sender: 'user', timestamp: "10:35 AM" },
+
     ],
   },
   {
@@ -223,3 +241,5 @@ export const getConversationData = () => {
 export const getPlatformStats = () => {
     return platformStats;
 }
+
+    
