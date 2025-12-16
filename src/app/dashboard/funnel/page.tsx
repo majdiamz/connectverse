@@ -65,13 +65,9 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
     >
       <CardContent className="p-4">
         <div className="flex items-center gap-3 mb-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={customer.avatarUrl} alt={customer.name} />
-            <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
-          </Avatar>
           <div className="flex-1">
             <p className="font-semibold">{customer.name}</p>
-            <p className="text-sm text-muted-foreground">{customer.email}</p>
+            <p className="text-sm text-muted-foreground">{customer.phone}</p>
           </div>
         </div>
         <div className="flex items-center justify-between">
