@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -70,16 +71,20 @@ export function AppSidebar() {
       <SidebarFooter className="border-t">
         <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip={{children: "Settings"}}>
+              <Link href="/dashboard/settings">
+                <SidebarMenuButton isActive={pathname === '/dashboard/settings'} tooltip={{children: "Settings"}}>
                     <Settings />
                     <span>Settings</span>
                 </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton tooltip={{children: "Support"}}>
+              <Link href="/dashboard/support">
+                <SidebarMenuButton isActive={pathname === '/dashboard/support'} tooltip={{children: "Support"}}>
                     <LifeBuoy />
                     <span>Support</span>
                 </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
         </SidebarMenu>
         <Separator className='my-2' />

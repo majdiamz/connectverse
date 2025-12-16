@@ -1,3 +1,4 @@
+
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -19,15 +20,14 @@ export function AppHeader() {
   const pathname = usePathname();
 
   const getPageTitle = () => {
+    const pathParts = pathname.split('/').filter(Boolean);
+    if (pathParts.length > 1) {
+      const title = pathParts[pathParts.length -1];
+      return title.charAt(0).toUpperCase() + title.slice(1);
+    }
     switch (pathname) {
       case "/dashboard":
         return "Dashboard";
-      case "/dashboard/inbox":
-        return "Inbox";
-      case "/dashboard/customers":
-        return "Customers";
-      case "/dashboard/funnel":
-        return "Funnel";
       default:
         return "ConnectVerse";
     }
