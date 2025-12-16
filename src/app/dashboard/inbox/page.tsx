@@ -171,27 +171,32 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
                 </div>
               )}
               {displayedMessages.map((message) => (
-                <div key={message.id} className={cn("flex items-end gap-2", message.sender === 'user' ? 'justify-end' : '')}>
-                  {message.sender === 'customer' && (
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={conversation.customer.avatarUrl} />
-                      <AvatarFallback>{conversation.customer.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div className={cn(
-                    "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2",
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-none'
-                      : 'bg-muted rounded-bl-none'
-                  )}>
-                    <p className="text-sm">{message.text}</p>
+                <div key={message.id} className={cn("flex flex-col gap-1", message.sender === 'user' ? 'items-end' : 'items-start')}>
+                  <div className={cn("flex items-end gap-2", message.sender === 'user' ? 'flex-row-reverse' : 'flex-row')}>
+                    {message.sender === 'customer' && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={conversation.customer.avatarUrl} />
+                        <AvatarFallback>{conversation.customer.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div className={cn(
+                      "max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2",
+                      message.sender === 'user'
+                        ? 'bg-primary text-primary-foreground rounded-br-none'
+                        : 'bg-muted rounded-bl-none'
+                    )}>
+                      <p className="text-sm">{message.text}</p>
+                    </div>
+                    {message.sender === 'user' && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={currentUser.avatarUrl} />
+                        <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    )}
                   </div>
-                  {message.sender === 'user' && (
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={currentUser.avatarUrl} />
-                      <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                  )}
+                  <div className={cn("text-xs text-muted-foreground", message.sender === 'user' ? 'pr-10' : 'pl-10')}>
+                    {message.timestamp}
+                  </div>
                 </div>
               ))}
             </div>
@@ -374,11 +379,11 @@ function InboxPageContent() {
         <Accordion type="single" collapsible>
             <AccordionItem value="filters" className="border-b-0">
                 <Card>
-                    <CardHeader className='p-4 border-b flex-row items-center justify-between'>
-                        <AccordionTrigger className="p-0 hover:no-underline flex-1">
+                    <CardHeader className='p-4 border-b flex-row items-center'>
+                         <AccordionTrigger className="p-0 hover:no-underline flex-1">
                             <CardTitle className="text-lg">Filters</CardTitle>
                         </AccordionTrigger>
-                        <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-4">
+                        <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-auto">
                             <FilterX className="h-4 w-4 mr-2" />
                             Reset
                         </Button>
@@ -461,5 +466,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
