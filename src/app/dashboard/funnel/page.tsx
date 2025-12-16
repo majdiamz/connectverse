@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Customer, Conversation, Channel } from '@/lib/data';
 import { getCustomers, getConversations } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -46,6 +47,8 @@ const statusColors: { [key in Customer['status']]: string } = {
 const CustomerCard = ({ customer, conversationId }: { customer: Customer; conversationId?: string }) => {
   const router = useRouter();
   const dealAmount = customer.dealHistory.find(d => d.status === 'In Progress')?.amount ?? 0;
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('customerId', customer.id);
@@ -68,7 +71,9 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
         <div className="flex-1 mb-2">
           <p className="font-semibold">{customer.name}</p>
           <p className="text-sm font-medium text-muted-foreground truncate">{customer.dealName}</p>
-          <p className="text-sm text-muted-foreground truncate">${dealAmount.toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground truncate">
+            ${isMounted ? dealAmount.toLocaleString() : '...'}
+          </p>
         </div>
         <div className="flex items-center justify-between">
           <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
@@ -97,6 +102,9 @@ const FunnelColumn = ({
     }, 0);
   }, [customers]);
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
   return (
     <div
       className="flex-shrink-0 w-64"
@@ -114,7 +122,9 @@ const FunnelColumn = ({
                   <span>{columnTitles[status]}</span>
                   <span className="text-sm font-normal text-muted-foreground bg-background px-2 py-1 rounded-md">{customers.length}</span>
                 </CardTitle>
-                <p className="font-semibold text-lg">${totalAmount.toLocaleString()}</p>
+                <p className="font-semibold text-lg">
+                  ${isMounted ? totalAmount.toLocaleString() : '...'}
+                </p>
             </CardHeader>
             <CardContent className="h-[calc(100%-6.5rem)]">
                 <ScrollArea className="h-full pr-4 -mr-4">
