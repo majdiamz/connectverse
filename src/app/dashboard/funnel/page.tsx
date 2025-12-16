@@ -64,15 +64,13 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
       onClick={handleClick}
     >
       <CardContent className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex-1">
-            <p className="font-semibold">{customer.name}</p>
-            <p className="text-sm text-muted-foreground">{customer.phone}</p>
-            <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
-          </div>
+        <div className="flex-1 mb-3">
+          <p className="font-semibold">{customer.name}</p>
+          <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
         </div>
         <div className="flex items-center justify-between">
-           <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
+          <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{customer.phone}</p>
         </div>
       </CardContent>
     </Card>
