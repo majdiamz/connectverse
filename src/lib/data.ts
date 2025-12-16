@@ -1,3 +1,4 @@
+
 export type Channel = "whatsapp" | "messenger" | "instagram" | "tiktok";
 
 export interface User {
@@ -33,6 +34,14 @@ export interface Conversation {
   channel: Channel;
   messages: Message[];
   unreadCount: number;
+}
+
+export interface PlatformStats {
+  platform: Channel;
+  totalConversations: number;
+  newLeads: number;
+  responseRate: number;
+  conversionRate: number;
 }
 
 export const currentUser: User = {
@@ -103,6 +112,13 @@ export const conversations: Conversation[] = [
   },
 ];
 
+const platformStats: PlatformStats[] = [
+  { platform: 'whatsapp', totalConversations: 25, newLeads: 5, responseRate: 95, conversionRate: 20 },
+  { platform: 'messenger', totalConversations: 15, newLeads: 3, responseRate: 90, conversionRate: 15 },
+  { platform: 'instagram', totalConversations: 10, newLeads: 2, responseRate: 88, conversionRate: 18 },
+  { platform: 'tiktok', totalConversations: 8, newLeads: 2, responseRate: 85, conversionRate: 25 },
+];
+
 export const businessInfo = {
   companyName: "ConnectVerse Inc.",
   address: "123 Main Street, Anytown, USA 12345",
@@ -137,3 +153,7 @@ export const getConversationData = () => {
     { month: 'Jun', new: 28, resolved: 32 },
   ];
 };
+
+export const getPlatformStats = () => {
+    return platformStats;
+}
