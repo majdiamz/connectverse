@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ChannelIcon } from '@/components/icons';
-import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, FilterX, Calendar as CalendarIcon, ArrowUp } from 'lucide-react';
+import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, FilterX, Calendar as CalendarIcon, ArrowUp, KanbanSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -26,6 +26,15 @@ const conversationsData = getConversations();
 
 const MESSAGES_PER_PAGE = 10;
 const CONVERSATIONS_PER_PAGE = 10;
+
+const statusColors: { [key in Customer['status']]: string } = {
+  new: 'bg-blue-500',
+  contacted: 'bg-yellow-500',
+  qualified: 'bg-green-500',
+  unqualified: 'bg-red-500',
+  demo: 'bg-purple-500',
+  won: 'bg-emerald-500',
+};
 
 const ConversationList = ({ 
     conversations,
@@ -269,6 +278,17 @@ const CustomerProfile = ({ customer }: { customer: Customer | null }) => (
             </div>
             <Separator />
             <div className="space-y-2 text-sm">
+              <h4 className="font-semibold">Funnel Stage</h4>
+              <div className="flex items-center gap-2">
+                <KanbanSquare className="h-4 w-4 text-muted-foreground" />
+                <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
+                  <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
+                  {customer.status}
+                </Badge>
+              </div>
+            </div>
+            <Separator />
+            <div className="space-y-2 text-sm">
                 <h4 className="font-semibold">Tags</h4>
                 <div className="flex flex-wrap gap-2">
                     {customer.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
@@ -483,5 +503,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
