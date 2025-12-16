@@ -131,6 +131,11 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
   const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setVisibleMessagesCount(MESSAGES_PER_PAGE);
@@ -223,7 +228,7 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
                     )}
                   </div>
                   <div className={cn("text-xs text-muted-foreground", message.sender === 'user' ? 'pr-10' : 'pl-10')}>
-                    {formatTimestamp(message.timestamp)}
+                    {isMounted ? formatTimestamp(message.timestamp) : <span className="h-4 w-20 inline-block bg-muted rounded"></span>}
                   </div>
                 </div>
               ))}
@@ -551,5 +556,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
