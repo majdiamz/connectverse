@@ -68,6 +68,7 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
           <div className="flex-1">
             <p className="font-semibold">{customer.name}</p>
             <p className="text-sm text-muted-foreground">{customer.phone}</p>
+            <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
           </div>
         </div>
         <div className="flex items-center justify-between">
