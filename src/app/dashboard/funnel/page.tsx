@@ -63,16 +63,9 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
             <p className="font-semibold">{customer.name}</p>
             <p className="text-sm text-muted-foreground">{customer.email}</p>
           </div>
-          <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="flex items-center justify-between">
-          <div className="flex flex-wrap gap-1">
-            {customer.tags.map((tag) => (
-              <Badge key={tag} variant="secondary">
-                {tag}
-              </Badge>
-            ))}
-          </div>
+           <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
           <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
               <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
               {customer.status}
