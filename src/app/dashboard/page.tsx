@@ -15,7 +15,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
 import { getDashboardStats, getConversationData } from '@/lib/data';
 import { MessageSquare, Users, CheckCircle, Clock } from 'lucide-react';
 import type { ChartConfig } from '@/components/ui/chart';
@@ -99,15 +99,18 @@ export default function DashboardPage() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
-                tickFormatter={(value) => `${value}%`}
               />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent />}
               />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="new" fill="var(--color-new)" radius={4} />
-              <Bar dataKey="resolved" fill="var(--color-resolved)" radius={4} />
+              <Bar dataKey="new" fill="var(--color-new)" radius={4}>
+                <LabelList dataKey="new" position="top" offset={5} formatter={(value: number) => `${value}%`} className="fill-foreground text-xs" />
+              </Bar>
+              <Bar dataKey="resolved" fill="var(--color-resolved)" radius={4}>
+                <LabelList dataKey="resolved" position="top" offset={5} formatter={(value: number) => `${value}%`} className="fill-foreground text-xs" />
+              </Bar>
             </BarChart>
           </ChartContainer>
         </CardContent>
