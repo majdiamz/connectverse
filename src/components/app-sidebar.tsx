@@ -23,6 +23,7 @@ import {
   KanbanSquare,
   Plug,
   HelpCircle,
+  Server,
 } from 'lucide-react';
 import { currentUser } from '@/lib/data';
 import { Separator } from './ui/separator';
@@ -33,6 +34,7 @@ const navItems = [
   { href: '/dashboard/customers', icon: Users, label: 'Customers' },
   { href: '/dashboard/funnel', icon: KanbanSquare, label: 'Funnel' },
   { href: '/dashboard/integrations', icon: Plug, label: 'Integrations' },
+  { href: '/dashboard/status', icon: Server, label: 'Status' },
 ];
 
 export function AppSidebar() {
@@ -73,6 +75,14 @@ export function AppSidebar() {
 
       <SidebarFooter className="border-t">
         <SidebarMenu>
+            <SidebarMenuItem>
+                <Link href="/dashboard/settings">
+                    <SidebarMenuButton isActive={pathname === '/dashboard/settings'} tooltip={{children: "Settings"}}>
+                        <Settings />
+                        <span>Settings</span>
+                    </SidebarMenuButton>
+                </Link>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <Link href="/dashboard/support">
                 <SidebarMenuButton isActive={pathname === '/dashboard/support'} tooltip={{children: "Support"}}>
