@@ -1,63 +1,16 @@
 import type { Channel } from "@/lib/data";
 
-const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg 
-        viewBox="0 0 50 50"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path d="M25,2C12.318,2,2,12.318,2,25c0,4.834,1.556,9.286,4.254,12.981L2,48l10.223-4.09c3.518,2.234,7.63,3.59,12.021,3.59 C37.682,47.5,48,37.182,48,24.5C48,11.818,37.682,2,25,2z" fill="#4caf50"/>
-        <path d="M36.213,31.966c-0.273-0.447-0.994-0.717-2.076-1.254s-6.371-3.14-7.355-3.495 c-0.984-0.355-1.704-0.533-2.424,0.533c-0.72,1.066-2.779,3.495-3.401,4.215c-0.621,0.72-1.242,0.81-2.324,0.273 c-1.082-0.537-4.563-1.684-8.691-5.36c-3.219-2.868-5.397-6.402-6.018-7.468c-0.621-1.066-0.066-1.646,0.467-2.183 c0.484-0.484,1.082-1.254,1.623-1.881c0.541-0.627,0.72-1.066,1.082-1.787c0.361-0.72,0.181-1.34-0.09-1.881 c-0.271-0.541-2.424-5.828-3.323-8.004c-0.852-2.088-1.729-1.74-2.424-1.74h-2.076c-0.72,0-1.881,0.271-2.963,1.34 c-1.082,1.066-4.131,4.037-4.131,9.84c0,5.803,4.221,11.424,4.842,12.24c0.621,0.81,8.273,13.23,20.197,17.76 c11.924,4.53,11.924,2.99,14.055,2.793c2.131-0.197,6.732-2.752,7.686-5.412C41.053,34.189,41.053,32.636,40.432,31.966z" fill="#fafafa"/>
-    </svg>
-);
+const iconUrls: Record<Channel, string> = {
+  whatsapp: "https://img.icons8.com/?size=100&id=99g_nik1bya1&format=png&color=000000",
+  messenger: "https://img.icons8.com/?size=100&id=8LtsGRrFVKGe&format=png&color=000000",
+  instagram: "https://img.icons8.com/?size=100&id=5eT5OnLluNOx&format=png&color=000000",
+  tiktok: "https://img.icons8.com/?size=100&id=SpIfxZbiwM1P&format=png&color=000000",
+};
 
-const MessengerIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        viewBox="0 0 48 48"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <path d="M24,4C12.954,4,4,12.954,4,24c0,8.134,4.814,15.111,11.778,18.225V48l6.023-3.614 C22.253,44.72,23.121,44.833,24,44.833C35.046,44.833,44,35.879,44,24.833S35.046,4,24,4z" fill="#006aff" />
-        <path d="M32.833,18.065l-5.614,10.233c-0.53,0.967-1.579,1.403-2.585,1.037l-4.757-1.72 c-1.006-0.366-1.579-1.403-1.038-2.369l5.614-10.233c0.53-0.967,1.579-1.403,2.585-1.037l4.757,1.72 C32.802,15.961,33.364,17.098,32.833,18.065z" fill="#fff"/>
-        <path d="M16.167,18.065l-1.258,2.295c-0.53,0.967,0.033,2.104,1.038,2.47l4.757,1.72 c1.006,0.366,2.056-0.07,2.585-1.037l1.258-2.295c0.53-0.967-0.033-2.104-1.038-2.47l-4.757-1.72 C17.746,16.661,16.697,17.098,16.167,18.065z" fill="#fff"/>
-    </svg>
-);
+export const ChannelIcon = ({ channel, ...props }: { channel: Channel } & React.ImgHTMLAttributes<HTMLImageElement>) => {
+  const url = iconUrls[channel];
+  if (!url) return null;
 
-
-const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg 
-        viewBox="0 0 48 48"
-        xmlns="http://www.w3.org/2000/svg"
-        {...props}
-    >
-        <radialGradient id="yOrnnhliCrdS2gy~4tD8ma" cx="19.38" cy="42.035" r="44.899" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#fd5"/><stop offset=".328" stopColor="#ff543f"/><stop offset=".348" stopColor="#fc5245"/><stop offset=".504" stopColor="#e64771"/><stop offset=".643" stopColor="#d53e91"/><stop offset=".761" stopColor="#cc39a4"/><stop offset=".841" stopColor="#c837ab"/></radialGradient><path fill="url(#yOrnnhliCrdS2gy~4tD8ma)" d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20 c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20 C42.014,38.383,38.417,41.986,34.017,41.99z"/><radialGradient id="yOrnnhliCrdS2gy~4tD8mb" cx="11.786" cy="5.54" r="29.813" gradientUnits="userSpaceOnUse"><stop offset="0" stopColor="#4168c9"/><stop offset=".993" stopColor="#4168c9" stopOpacity="0"/></radialGradient><path fill="url(#yOrnnhliCrdS2gy~4tD8mb)" d="M34.017,41.99l-20,0.019c-4.4,0.004-8.003-3.592-8.008-7.992l-0.019-20 c-0.004-4.4,3.592-8.003,7.992-8.008l20-0.019c4.4-0.004,8.003,3.592,8.008,7.992l0.019,20 C42.014,38.383,38.417,41.986,34.017,41.99z"/><path fill="#fff" d="M24,31c-3.859,0-7-3.141-7-7s3.141-7,7-7s7,3.141,7,7S27.859,31,24,31z M24,19c-2.757,0-5,2.243-5,5s2.243,5,5,5s5-2.243,5-5S26.757,19,24,19z"/><circle cx="31.5" cy="16.5" r="1.5" fill="#fff"/><path fill="#fff" d="M30,37H18c-3.859,0-7-3.141-7-7V18c0-3.859,3.141-7,7-7h12c3.859,0,7,3.141,7,7v12 C37,33.859,33.859,37,30,37z M18,13c-2.757,0-5,2.243-5,5v12c0,2.757,2.243,5,5,5h12c2.757,0,5-2.243,5-5V18c0-2.757-2.243-5-5-5H18z"/>
-    </svg>
-);
-
-const TikTokIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 50 50"
-      {...props}
-    >
-      <path d="M41,4H9C6.24,4,4,6.24,4,9v32c0,2.76,2.24,5,5,5h32c2.76,0,5-2.24,5-5V9C46,6.24,43.76,4,41,4z" fill="#212121"/>
-      <path d="M30.4,18.4h-5.1c-0.1-2.9-0.4-5.8-0.4-8.7c3,0,6,0,8.9,0V18.4z" fill="#fff"/>
-      <path d="M24.9,27.9v10.3c0,0.1,0,0.2,0,0.3c-1.8,1-3.9,1.6-6,1.6c-2.8,0-5.4-1.2-7.1-3.2 c-1.6-1.9-2.3-4.5-2-7.1C10,27.1,12.3,25,15,25c1.4,0,2.8,0.5,3.9,1.4C20.4,27.1,22.6,27.6,24.9,27.9z" fill="#ff004f"/>
-      <path d="M30.4,18.4c-2,0-4,0-6,0c-0.2,3.4,0,6.8-0.4,10.2c-1.3-0.8-2.7-1.2-4.1-1.2c-4,0-7.3,3.3-7.3,7.3 c0,4,3.3,7.3,7.3,7.3c4,0,7.3-3.3,7.3-7.3c0-1.2-0.3-2.4-0.8-3.5c1.4,1.2,3.3,2,5.2,2c0.1,0,0.1,0,0.2,0V18.4z" fill="#00f2ea"/>
-    </svg>
-);
-
-export const ChannelIcon = ({ channel, ...props }: { channel: Channel } & React.SVGProps<SVGSVGElement>) => {
-  switch (channel) {
-    case 'whatsapp':
-      return <WhatsAppIcon {...props} />;
-    case 'messenger':
-      return <MessengerIcon {...props} />;
-    case 'instagram':
-      return <InstagramIcon {...props} />;
-    case 'tiktok':
-      return <TikTokIcon {...props} />;
-    default:
-      return null;
-  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={url} alt={`${channel} icon`} {...props} />;
 };
