@@ -53,7 +53,7 @@ const EmailList = ({
         <div className="p-2 space-y-1">
           {emails.map(email => {
             const plainBody = email.body.replace(/<[^>]*>?/gm, ' ');
-            const snippet = plainBody.length > 25 ? `${plainBody.substring(0, 25)}...` : plainBody;
+            const snippet = plainBody.length > 50 ? `${plainBody.substring(0, 50)}...` : plainBody;
             return (
               <button
                 key={email.id}
