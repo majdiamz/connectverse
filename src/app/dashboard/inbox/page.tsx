@@ -3,7 +3,7 @@
 
 import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { Conversation, Message, Customer } from '@/lib/data';
+import type { Conversation, Message, Customer, CustomerStatus } from '@/lib/data';
 import { getConversations, currentUser } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,8 @@ const statusColors: { [key in Customer['status']]: string } = {
   demo: 'bg-purple-500',
   won: 'bg-emerald-500',
 };
+
+const funnelStages: CustomerStatus[] = ['new', 'contacted', 'qualified', 'demo', 'won', 'unqualified'];
 
 const ConversationList = ({ 
     conversations,
@@ -252,7 +254,7 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
   );
 }
 
-const CustomerProfile = ({ customer }: { customer: Customer | null }) => (
+const CustomerProfile = ({ customer, onStatusChange }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void }) => (
   <Card className="hidden lg:flex lg:flex-col h-full">
     {customer ? (
       <>
@@ -281,10 +283,24 @@ const CustomerProfile = ({ customer }: { customer: Customer | null }) => (
               <h4 className="font-semibold">Funnel Stage</h4>
               <div className="flex items-center gap-2">
                 <KanbanSquare className="h-4 w-4 text-muted-foreground" />
-                <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
-                  <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
-                  {customer.status}
-                </Badge>
+                <Select
+                  value={customer.status}
+                  onValueChange={(newStatus) => onStatusChange(customer.id, newStatus as CustomerStatus)}
+                >
+                  <SelectTrigger className="w-[180px] h-8 text-xs capitalize">
+                    <SelectValue placeholder="Change status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funnelStages.map(stage => (
+                      <SelectItem key={stage} value={stage} className="capitalize text-xs">
+                        <div className="flex items-center">
+                          <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[stage])}></div>
+                          {stage}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <Separator />
@@ -351,7 +367,16 @@ function InboxPageContent() {
   const searchParams = useSearchParams()
   const conversationId = searchParams.get('conversationId')
   
-  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [allConversations, setAllConversations] = useState<Conversation[]>(getConversations());
+  
+  const selectedConversation = useMemo(() => {
+    const conv = allConversations.find(c => c.id === conversationId);
+    if (conv) return conv;
+    if (!conversationId && allConversations.length > 0) {
+      return allConversations[0];
+    }
+    return null;
+  }, [allConversations, conversationId]);
 
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('');
@@ -360,7 +385,7 @@ function InboxPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredConversations = useMemo(() => {
-    return conversationsData
+    return allConversations
       .filter(conv => 
         conv.customer.name.toLowerCase().includes(search.toLowerCase()) ||
         conv.customer.email.toLowerCase().includes(search.toLowerCase())
@@ -372,7 +397,7 @@ function InboxPageContent() {
         if (statusFilter === 'unread') return conv.unreadCount > 0;
         return true;
       });
-  }, [search, channelFilter, statusFilter, dateFilter]);
+  }, [allConversations, search, channelFilter, statusFilter, dateFilter]);
 
   const totalPages = Math.ceil(filteredConversations.length / CONVERSATIONS_PER_PAGE);
 
@@ -397,17 +422,37 @@ function InboxPageContent() {
     setDateFilter(undefined);
     setCurrentPage(1);
   }
-
-  useEffect(() => {
-    const initialConversation = conversationsData.find(c => c.id === conversationId);
-    if (initialConversation) {
-      setSelectedConversation(initialConversation);
-    } else if (!conversationId && paginatedConversations.length > 0) {
-      setSelectedConversation(paginatedConversations[0]);
-    } else {
-      setSelectedConversation(null);
+  
+  const handleSelectConversation = (conversation: Conversation) => {
+    const newConversations = allConversations.map(c => 
+      c.id === conversation.id ? {...c, unreadCount: 0} : c
+    );
+    setAllConversations(newConversations);
+    
+    // Using window.history.pushState to update URL without page reload
+    const url = new URL(window.location.href);
+    url.searchParams.set('conversationId', conversation.id);
+    window.history.pushState({ path: url.href }, '', url.href);
+    // We still call this to update our internal state, even though URL is handled manually
+    // setSelectedConversation(conversation); 
+  };
+  
+  const getSelectedConversation = () => {
+    if (conversationId) {
+      return allConversations.find(c => c.id === conversationId) ?? null;
     }
-  }, [conversationId, paginatedConversations]);
+    return paginatedConversations[0] ?? null;
+  }
+  
+  const handleStatusChange = (customerId: string, newStatus: CustomerStatus) => {
+    setAllConversations(prev => 
+      prev.map(conv => 
+        conv.customer.id === customerId 
+          ? { ...conv, customer: { ...conv.customer, status: newStatus } } 
+          : conv
+      )
+    );
+  };
 
 
   return (
@@ -464,8 +509,8 @@ function InboxPageContent() {
         <div className="flex-1 flex flex-col min-h-0">
           <ConversationList 
             conversations={paginatedConversations}
-            onSelectConversation={setSelectedConversation} 
-            selectedConversationId={selectedConversation?.id ?? null} 
+            onSelectConversation={handleSelectConversation} 
+            selectedConversationId={getSelectedConversation()?.id ?? null} 
           />
           <div className="flex items-center justify-end space-x-2 py-4">
             <Button
@@ -490,8 +535,11 @@ function InboxPageContent() {
           </div>
         </div>
       </div>
-      <MessageView conversation={selectedConversation} />
-      <CustomerProfile customer={selectedConversation?.customer ?? null} />
+      <MessageView conversation={getSelectedConversation()} />
+      <CustomerProfile 
+        customer={getSelectedConversation()?.customer ?? null} 
+        onStatusChange={handleStatusChange} 
+      />
     </div>
   );
 }
@@ -503,3 +551,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    
