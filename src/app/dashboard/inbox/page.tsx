@@ -461,7 +461,7 @@ function InboxPageContent() {
 
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-4">
+    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-2">
       <div className="flex flex-col gap-4">
         <Accordion type="single" collapsible>
             <AccordionItem value="filters" className="border-b-0">
