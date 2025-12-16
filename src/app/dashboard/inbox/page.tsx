@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
@@ -514,7 +515,7 @@ function InboxPageContent() {
 
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-0.5">
+    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-0.25">
       <div className="flex flex-col gap-2">
         <div className="flex-1 flex flex-col min-h-0">
           <ConversationList 
@@ -563,3 +564,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    
