@@ -22,6 +22,7 @@ import {
   LifeBuoy,
   KanbanSquare,
   Plug,
+  HelpCircle,
 } from 'lucide-react';
 import { currentUser } from '@/lib/data';
 import { Separator } from './ui/separator';
@@ -87,6 +88,14 @@ export function AppSidebar() {
                     <span>Support</span>
                 </SidebarMenuButton>
               </Link>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <Link href="/dashboard/faq">
+                    <SidebarMenuButton isActive={pathname === '/dashboard/faq'} tooltip={{children: "FAQ"}}>
+                        <HelpCircle />
+                        <span>FAQ</span>
+                    </SidebarMenuButton>
+                </Link>
             </SidebarMenuItem>
         </SidebarMenu>
         <Separator className='my-2' />
