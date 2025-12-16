@@ -15,11 +15,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { FilterX, SlidersHorizontal, Calendar as CalendarIcon } from 'lucide-react';
+import { FilterX, SlidersHorizontal, Calendar as CalendarIcon, LayoutGrid, List } from 'lucide-react';
 import { DateRange } from 'react-day-picker';
 import { format, parse } from 'date-fns';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
-const columns: Customer['status'][] = ['new', 'contacted', 'qualified', 'demo', 'won', 'unqualified'];
+
+const columns: (Customer['status'])[] = ['new', 'contacted', 'qualified', 'demo', 'won', 'unqualified'];
 
 const columnTitles: { [key in Customer['status']]: string } = {
   new: 'New',
@@ -29,6 +32,16 @@ const columnTitles: { [key in Customer['status']]: string } = {
   won: 'Won',
   unqualified: 'Unqualified',
 };
+
+const statusColors: { [key in Customer['status']]: string } = {
+  new: 'bg-blue-500',
+  contacted: 'bg-yellow-500',
+  qualified: 'bg-green-500',
+  unqualified: 'bg-red-500',
+  demo: 'bg-purple-500',
+  won: 'bg-emerald-500'
+};
+
 
 const CustomerCard = ({ customer, conversationId }: { customer: Customer; conversationId?: string }) => {
   const router = useRouter();
@@ -154,6 +167,55 @@ function DateRangePicker({ className, date, onSelect }: { className?: string, da
   )
 }
 
+const ListView = ({ customers }: { customers: Customer[] }) => {
+  return (
+    <Card>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Customer</TableHead>
+              <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead className="hidden md:table-cell">Phone</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden lg:table-cell">Joined</TableHead>
+              <TableHead>Source</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {customers.map((customer) => (
+              <TableRow key={customer.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={customer.avatarUrl} alt={customer.name} />
+                      <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">{customer.name}</span>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-muted-foreground">{customer.email}</TableCell>
+                <TableCell className="hidden md:table-cell text-muted-foreground">{customer.phone}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                   <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
+                      <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
+                      {customer.status}
+                    </Badge>
+                </TableCell>
+                <TableCell className="hidden lg:table-cell text-muted-foreground">{customer.joined}</TableCell>
+                <TableCell>
+                  <ChannelIcon channel={customer.channel} className="h-5 w-5" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
+
+
 export default function FunnelPage() {
   const [allCustomers, setAllCustomers] = useState<Customer[]>(getCustomers());
   const [conversations] = useState<Conversation[]>(getConversations());
@@ -161,6 +223,7 @@ export default function FunnelPage() {
   const [channelFilter, setChannelFilter] = useState<Channel | ''>('');
   const [tagFilter, setTagFilter] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [view, setView] = useState<'kanban' | 'list'>('kanban');
 
   const filteredCustomers = useMemo(() => {
     return allCustomers.filter(customer => {
@@ -231,22 +294,38 @@ export default function FunnelPage() {
           </div>
         </CardContent>
       </Card>
-      <div className="flex-1 -mx-4 -my-2 p-0">
-        <ScrollArea className="w-full h-full whitespace-nowrap">
-            <div className="flex gap-6 p-4 h-full">
-                {columns.map(status => (
-                    <FunnelColumn
-                      key={status}
-                      status={status}
-                      customers={customersByStatus[status]}
-                      conversations={conversations}
-                      onDrop={handleDrop}
-                    />
-                ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+
+       <div className="flex items-center justify-end gap-2">
+        <Button variant={view === 'kanban' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('kanban')}>
+          <LayoutGrid className="h-4 w-4" />
+        </Button>
+        <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')}>
+          <List className="h-4 w-4" />
+        </Button>
       </div>
+
+      {view === 'kanban' ? (
+        <div className="flex-1 -mx-4 -my-2 p-0">
+          <ScrollArea className="w-full h-full whitespace-nowrap">
+              <div className="flex gap-6 p-4 h-full">
+                  {columns.map(status => (
+                      <FunnelColumn
+                        key={status}
+                        status={status}
+                        customers={customersByStatus[status]}
+                        conversations={conversations}
+                        onDrop={handleDrop}
+                      />
+                  ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+      ) : (
+        <ListView customers={filteredCustomers} />
+      )}
     </div>
   );
 }
+
+    
