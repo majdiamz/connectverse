@@ -74,14 +74,6 @@ export function AppSidebar() {
       <SidebarFooter className="border-t">
         <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/dashboard/settings">
-                <SidebarMenuButton isActive={pathname === '/dashboard/settings'} tooltip={{children: "Settings"}}>
-                    <Settings />
-                    <span>Settings</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
               <Link href="/dashboard/support">
                 <SidebarMenuButton isActive={pathname === '/dashboard/support'} tooltip={{children: "Support"}}>
                     <LifeBuoy />
