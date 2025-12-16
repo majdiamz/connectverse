@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { format, isToday, isYesterday, formatDistanceToNow } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const conversationsData = getConversations();
@@ -40,6 +40,17 @@ const ConversationList = ({
     useEffect(() => {
         setIsMounted(true);
     }, []);
+    
+    const formatTimestamp = (timestamp: string) => {
+        const date = new Date(timestamp);
+        if (isToday(date)) {
+            return format(date, 'p');
+        }
+        if (isYesterday(date)) {
+            return 'Yesterday';
+        }
+        return format(date, 'P');
+    }
 
     if (!isMounted) {
         return (
@@ -88,7 +99,7 @@ const ConversationList = ({
                     <div className="flex-1 overflow-hidden">
                     <div className="flex items-center justify-between">
                         <p className="font-semibold truncate">{conv.customer.name}</p>
-                        <p className="text-xs text-muted-foreground">{conv.messages[conv.messages.length - 1].timestamp}</p>
+                        <p className="text-xs text-muted-foreground">{formatTimestamp(conv.messages[conv.messages.length - 1].timestamp)}</p>
                     </div>
                     <p className="text-sm text-muted-foreground truncate">{conv.messages[conv.messages.length - 1].text}</p>
                     </div>
@@ -143,6 +154,12 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
   const displayedMessages = messages.slice(Math.max(0, messages.length - visibleMessagesCount));
   const canLoadMore = visibleMessagesCount < messages.length;
 
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return format(date, "MMM d, yyyy 'at' h:mm a");
+  };
+
+
   return (
     <div className="flex flex-col h-full bg-card border-x">
       {conversation ? (
@@ -195,7 +212,7 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
                     )}
                   </div>
                   <div className={cn("text-xs text-muted-foreground", message.sender === 'user' ? 'pr-10' : 'pl-10')}>
-                    {message.timestamp}
+                    {formatTimestamp(message.timestamp)}
                   </div>
                 </div>
               ))}

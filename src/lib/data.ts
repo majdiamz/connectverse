@@ -108,6 +108,13 @@ const customers: Customer[] = [
   { id: "cust_55", name: "Sharon Sanchez", email: "sharon.s@example.com", phone: "+1-555-0155", avatarUrl: "https://picsum.photos/seed/155/100/100", joined: "2023-08-09", tags: ["interested"], channel: "instagram", status: 'unqualified' },
 ];
 
+const now = new Date();
+const yesterday = new Date(now);
+yesterday.setDate(yesterday.getDate() - 1);
+
+const formatTimestamp = (date: Date) => {
+    return date.toISOString();
+}
 
 export const conversations: Conversation[] = [
   {
@@ -116,28 +123,26 @@ export const conversations: Conversation[] = [
     channel: "whatsapp",
     unreadCount: 2,
     messages: [
-        { id: "msg_01_01", text: "Hi, I need help with my recent order.", sender: 'customer', timestamp: "12:00 PM" },
-        { id: "msg_01_02", text: "Of course, what is the order number?", sender: 'user', timestamp: "12:01 PM" },
-        { id: "msg_01_03", text: "It's #12345.", sender: 'customer', timestamp: "12:02 PM" },
-        { id: "msg_01_04", text: "Thank you. Let me check that for you.", sender: 'user', timestamp: "12:03 PM" },
-        { id: "msg_01_05", text: "I see the order was delivered yesterday. Is there an issue with it?", sender: 'user', timestamp: "12:05 PM" },
-        { id: "msg_01_06", text: "Yes, one of the items is damaged.", sender: 'customer', timestamp: "12:06 PM" },
-        { id: "msg_01_07", text: "I'm so sorry to hear that. Can you send a photo of the damaged item?", sender: 'user', timestamp: "12:07 PM" },
-        { id: "msg_01_08", text: "Sure, here it is.", sender: 'customer', timestamp: "12:08 PM" },
-        { id: "msg_01_09", text: "Thank you. I'm processing a replacement for you right now.", sender: 'user', timestamp: "12:10 PM" },
-        { id: "msg_01_10", text: "The new order number is #12346. It should arrive in 3-5 business days.", sender: 'user', timestamp: "12:11 PM" },
-        { id: "msg_01_11", text: "Great, thank you for your help!", sender: 'customer', timestamp: "12:12 PM" },
-        { id: "msg_01_12", text: "You're welcome! Is there anything else I can assist you with?", sender: 'user', timestamp: "12:13 PM" },
-        { id: "msg_01_13", text: "No, that's all. Thanks again.", sender: 'customer', timestamp: "12:14 PM" },
-        { id: "msg_01_14", text: "Have a great day!", sender: 'user', timestamp: "12:15 PM" },
-        { id: "msg_01_15", text: "You too!", sender: 'customer', timestamp: "12:16 PM" },
-        { id: "msg_01_16", text: "Hello! I'm interested in your services. Can you tell me more?", sender: 'customer', timestamp: "10:30 AM" },
-        { id: "msg_01_17", text: "Hi Sarah! Absolutely. We offer a range of solutions. What specifically are you looking for?", sender: 'user', timestamp: "10:31 AM" },
-        { id: "msg_01_18", text: "I'm looking for a tool to manage my social media messages.", sender: 'customer', timestamp: "10:32 AM" },
-        { id: "msg_01_19", text: "You've come to the right place! ConnectVerse is perfect for that.", sender: 'user', timestamp: "10:33 AM" },
-        { id: "msg_01_20", text: "Does it support team collaboration?", sender: 'customer', timestamp: "10:34 AM" },
-        { id: "msg_01_21", text: "Yes, it has features for assigning conversations and leaving internal notes.", sender: 'user', timestamp: "10:35 AM" },
-
+        { id: "msg_01_01", text: "Hi, I need help with my recent order.", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 21 * 60000)) },
+        { id: "msg_01_02", text: "Of course, what is the order number?", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 20 * 60000)) },
+        { id: "msg_01_03", text: "It's #12345.", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 19 * 60000)) },
+        { id: "msg_01_04", text: "Thank you. Let me check that for you.", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 18 * 60000)) },
+        { id: "msg_01_05", text: "I see the order was delivered yesterday. Is there an issue with it?", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 16 * 60000)) },
+        { id: "msg_01_06", text: "Yes, one of the items is damaged.", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 15 * 60000)) },
+        { id: "msg_01_07", text: "I'm so sorry to hear that. Can you send a photo of the damaged item?", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 14 * 60000)) },
+        { id: "msg_01_08", text: "Sure, here it is.", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 13 * 60000)) },
+        { id: "msg_01_09", text: "Thank you. I'm processing a replacement for you right now.", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 11 * 60000)) },
+        { id: "msg_01_10", text: "The new order number is #12346. It should arrive in 3-5 business days.", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 10 * 60000)) },
+        { id: "msg_01_11", text: "Great, thank you for your help!", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 9 * 60000)) },
+        { id: "msg_01_12", text: "You're welcome! Is there anything else I can assist you with?", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 8 * 60000)) },
+        { id: "msg_01_13", text: "No, that's all. Thanks again.", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 7 * 60000)) },
+        { id: "msg_01_14", text: "Have a great day!", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 6 * 60000)) },
+        { id: "msg_01_15", text: "You too!", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 5 * 60000)) },
+        { id: "msg_01_16", text: "Hello! I'm interested in your services. Can you tell me more?", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 4 * 60000)) },
+        { id: "msg_01_17", text: "Hi Sarah! Absolutely. We offer a range of solutions. What specifically are you looking for?", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 3 * 60000)) },
+        { id: "msg_01_18", text: "I'm looking for a tool to manage my social media messages.", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 2 * 60000)) },
+        { id: "msg_01_19", text: "You've come to the right place! ConnectVerse is perfect for that.", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 1 * 60000)) },
+        { id: "msg_01_20", text: "Does it support team collaboration?", sender: 'customer', timestamp: formatTimestamp(now) },
     ],
   },
   {
@@ -146,8 +151,8 @@ export const conversations: Conversation[] = [
     channel: "messenger",
     unreadCount: 0,
     messages: [
-      { id: "msg_02a", text: "Hi, I saw your ad and wanted to get pricing details.", sender: 'customer', timestamp: "Yesterday" },
-      { id: "msg_02b", text: "Hi Michael, thanks for reaching out. I can send you our pricing sheet. What's the best email for you?", sender: 'user', timestamp: "Yesterday" },
+      { id: "msg_02a", text: "Hi, I saw your ad and wanted to get pricing details.", sender: 'customer', timestamp: formatTimestamp(new Date(yesterday.getTime() - 2 * 60000)) },
+      { id: "msg_02b", text: "Hi Michael, thanks for reaching out. I can send you our pricing sheet. What's the best email for you?", sender: 'user', timestamp: formatTimestamp(yesterday) },
     ],
   },
   {
@@ -156,7 +161,7 @@ export const conversations: Conversation[] = [
     channel: "instagram",
     unreadCount: 1,
     messages: [
-      { id: "msg_03a", text: "Your product looks amazing! 🔥", sender: 'customer', timestamp: "3 days ago" },
+      { id: "msg_03a", text: "Your product looks amazing! 🔥", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 3 * 24 * 60 * 60000)) },
     ],
   },
   {
@@ -165,8 +170,8 @@ export const conversations: Conversation[] = [
     channel: "tiktok",
     unreadCount: 0,
     messages: [
-      { id: "msg_04a", text: "Can I schedule a demo for next week?", sender: 'customer', timestamp: "4 days ago" },
-      { id: "msg_04b", text: "Definitely, David. I've sent a calendar invite to your email. Talk to you then!", sender: 'user', timestamp: "4 days ago" },
+      { id: "msg_04a", text: "Can I schedule a demo for next week?", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 4 * 24 * 60 * 60000)) },
+      { id: "msg_04b", text: "Definitely, David. I've sent a calendar invite to your email. Talk to you then!", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 4 * 24 * 60 * 60000 + 60000)) },
     ],
   },
   {
@@ -175,8 +180,8 @@ export const conversations: Conversation[] = [
     channel: "whatsapp",
     unreadCount: 0,
     messages: [
-      { id: "msg_05a", text: "Is this the right number for customer support?", sender: 'customer', timestamp: "5 days ago" },
-      { id: "msg_05b", text: "Hi Jessica, yes it is! How can I help you today?", sender: 'user', timestamp: "5 days ago" },
+      { id: "msg_05a", text: "Is this the right number for customer support?", sender: 'customer', timestamp: formatTimestamp(new Date(now.getTime() - 5 * 24 * 60 * 60000)) },
+      { id: "msg_05b", text: "Hi Jessica, yes it is! How can I help you today?", sender: 'user', timestamp: formatTimestamp(new Date(now.getTime() - 5 * 24 * 60 * 60000 + 60000)) },
     ],
   },
 ];
@@ -185,7 +190,7 @@ const platformStats: PlatformStats[] = [
   { platform: 'whatsapp', totalConversations: 25, newLeads: 5, responseRate: 95, conversionRate: 20 },
   { platform: 'messenger', totalConversations: 15, newLeads: 3, responseRate: 90, conversionRate: 15 },
   { platform: 'instagram', totalConversations: 10, newLeads: 2, responseRate: 88, conversionRate: 18 },
-  { platform: 'tiktok', totalConversations: 8, newLeads: 2, responseRate: 85, conversionRate: 25 },
+  { platform: 'tiktok', totalConversations: 8, newLeads: 2, responseRate: 25, conversionRate: 25 },
 ];
 
 export const businessInfo = {
@@ -211,7 +216,7 @@ export const getConversations = () => {
     channel: customer.channel,
     unreadCount: 0,
     messages: [
-      { id: `msg_${String(conversations.length + index + 1).padStart(2, '0')}a`, text: "Hi there!", sender: 'customer' as 'customer', timestamp: `${index + 2} hours ago` }
+      { id: `msg_${String(conversations.length + index + 1).padStart(2, '0')}a`, text: "Hi there!", sender: 'customer' as 'customer', timestamp: formatTimestamp(new Date(now.getTime() - (index + 2) * 60 * 60000)) }
     ]
   }));
   
