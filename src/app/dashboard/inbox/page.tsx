@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
@@ -259,70 +258,73 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
   );
 }
 
-const CustomerProfile = ({ customer, onStatusChange }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void }) => (
-  <Card className="hidden lg:flex lg:flex-col h-full">
-    {customer ? (
-      <>
-        <CardHeader className="items-center p-6">
-          <Avatar className="h-20 w-20 mb-2">
-            <AvatarImage src={customer.avatarUrl} alt={customer.name} />
-            <AvatarFallback>{customer.name.substring(0, 2)}</AvatarFallback>
-          </Avatar>
-          <CardTitle className="text-xl">{customer.name}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 space-y-4 px-6">
-            <Separator />
-            <div className="space-y-2 text-sm">
-                <h4 className="font-semibold">Contact Details</h4>
-                <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{customer.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{customer.phone}</span>
-                </div>
-            </div>
-            <Separator />
-            <div className="space-y-2 text-sm">
-              <h4 className="font-semibold">Funnel Stage</h4>
-              <div className="flex items-center gap-2">
-                <KanbanSquare className="h-4 w-4 text-muted-foreground" />
-                <Select
-                  value={customer.status}
-                  onValueChange={(newStatus) => onStatusChange(customer.id, newStatus as CustomerStatus)}
-                >
-                  <SelectTrigger className="w-[180px] h-8 text-xs capitalize">
-                    <SelectValue placeholder="Change status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funnelStages.map(stage => (
-                      <SelectItem key={stage} value={stage} className="capitalize text-xs">
-                        <div className="flex items-center">
-                          <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[stage])}></div>
-                          {stage}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+const CustomerProfile = ({ customer, onStatusChange, children }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, children: React.ReactNode }) => (
+  <div className="hidden lg:flex lg:flex-col h-full gap-2">
+    {children}
+    <Card className="flex-1">
+      {customer ? (
+        <>
+          <CardHeader className="items-center p-6">
+            <Avatar className="h-20 w-20 mb-2">
+              <AvatarImage src={customer.avatarUrl} alt={customer.name} />
+              <AvatarFallback>{customer.name.substring(0, 2)}</AvatarFallback>
+            </Avatar>
+            <CardTitle className="text-xl">{customer.name}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 space-y-4 px-6">
+              <Separator />
+              <div className="space-y-2 text-sm">
+                  <h4 className="font-semibold">Contact Details</h4>
+                  <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{customer.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{customer.phone}</span>
+                  </div>
               </div>
-            </div>
-            <Separator />
-            <div className="space-y-2 text-sm">
-                <h4 className="font-semibold">Tags</h4>
-                <div className="flex flex-wrap gap-2">
-                    {customer.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+              <Separator />
+              <div className="space-y-2 text-sm">
+                <h4 className="font-semibold">Funnel Stage</h4>
+                <div className="flex items-center gap-2">
+                  <KanbanSquare className="h-4 w-4 text-muted-foreground" />
+                  <Select
+                    value={customer.status}
+                    onValueChange={(newStatus) => onStatusChange(customer.id, newStatus as CustomerStatus)}
+                  >
+                    <SelectTrigger className="w-[180px] h-8 text-xs capitalize">
+                      <SelectValue placeholder="Change status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {funnelStages.map(stage => (
+                        <SelectItem key={stage} value={stage} className="capitalize text-xs">
+                          <div className="flex items-center">
+                            <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[stage])}></div>
+                            {stage}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-            </div>
-        </CardContent>
-      </>
-    ) : (
-      <div className="flex flex-1 items-center justify-center text-center">
-        <p className="text-muted-foreground">Customer details will appear here.</p>
-      </div>
-    )}
-  </Card>
+              </div>
+              <Separator />
+              <div className="space-y-2 text-sm">
+                  <h4 className="font-semibold">Tags</h4>
+                  <div className="flex flex-wrap gap-2">
+                      {customer.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                  </div>
+              </div>
+          </CardContent>
+        </>
+      ) : (
+        <div className="flex flex-1 items-center justify-center text-center">
+          <p className="text-muted-foreground">Customer details will appear here.</p>
+        </div>
+      )}
+    </Card>
+  </div>
 );
 
 function DateRangePicker({ className, date, onSelect }: React.HTMLAttributes<HTMLDivElement> & { date: DateRange | undefined, onSelect: (date: DateRange | undefined) => void}) {
@@ -459,58 +461,61 @@ function InboxPageContent() {
     );
   };
 
+  const filtersWidget = (
+    <Accordion type="single" collapsible>
+        <AccordionItem value="filters" className="border-b-0">
+            <Card>
+                <CardHeader className='p-4 border-b flex-row items-center justify-between'>
+                      <AccordionTrigger className="p-0 hover:no-underline flex-1">
+                        <CardTitle className="text-lg">Filters</CardTitle>
+                    </AccordionTrigger>
+                    <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-auto">
+                        <FilterX className="h-4 w-4 mr-2" />
+                        Reset
+                    </Button>
+                </CardHeader>
+                <AccordionContent>
+                    <CardContent className="p-4 pt-4">
+                      <div className="space-y-4">
+                          <div className="relative">
+                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input placeholder="Search by name or email..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <Select value={channelFilter} onValueChange={setChannelFilter}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Channel" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="whatsapp">Whatsapp</SelectItem>
+                                    <SelectItem value="messenger">Messenger</SelectItem>
+                                    <SelectItem value="instagram">Instagram</SelectItem>
+                                    <SelectItem value="tiktok">TikTok</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="read">Read</SelectItem>
+                                    <SelectItem value="unread">Unread</SelectItem>
+                                </SelectContent>
+                            </Select>
+                          </div>
+                          <DateRangePicker date={dateFilter} onSelect={setDateFilter} />
+                      </div>
+                    </CardContent>
+                </AccordionContent>
+            </Card>
+        </AccordionItem>
+    </Accordion>
+  );
+
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-2">
-      <div className="flex flex-col gap-4">
-        <Accordion type="single" collapsible>
-            <AccordionItem value="filters" className="border-b-0">
-                <Card>
-                    <CardHeader className='p-4 border-b flex-row items-center justify-between'>
-                         <AccordionTrigger className="p-0 hover:no-underline flex-1">
-                            <CardTitle className="text-lg">Filters</CardTitle>
-                        </AccordionTrigger>
-                        <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-auto">
-                            <FilterX className="h-4 w-4 mr-2" />
-                            Reset
-                        </Button>
-                    </CardHeader>
-                    <AccordionContent>
-                        <CardContent className="p-4 pt-4">
-                          <div className="space-y-4">
-                              <div className="relative">
-                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                  <Input placeholder="Search by name or email..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <Select value={channelFilter} onValueChange={setChannelFilter}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Channel" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="whatsapp">Whatsapp</SelectItem>
-                                        <SelectItem value="messenger">Messenger</SelectItem>
-                                        <SelectItem value="instagram">Instagram</SelectItem>
-                                        <SelectItem value="tiktok">TikTok</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="read">Read</SelectItem>
-                                        <SelectItem value="unread">Unread</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                              </div>
-                              <DateRangePicker date={dateFilter} onSelect={setDateFilter} />
-                          </div>
-                        </CardContent>
-                    </AccordionContent>
-                </Card>
-            </AccordionItem>
-        </Accordion>
+    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-1">
+      <div className="flex flex-col gap-2">
         <div className="flex-1 flex flex-col min-h-0">
           <ConversationList 
             conversations={paginatedConversations}
@@ -544,7 +549,9 @@ function InboxPageContent() {
       <CustomerProfile 
         customer={getSelectedConversation()?.customer ?? null} 
         onStatusChange={handleStatusChange} 
-      />
+      >
+        {filtersWidget}
+      </CustomerProfile>
     </div>
   );
 }
