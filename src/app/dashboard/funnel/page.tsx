@@ -91,7 +91,7 @@ const FunnelColumn = ({
   onDrop: (customerId: string, newStatus: Customer['status']) => void,
 }) => (
   <div
-    className="flex-shrink-0 w-80"
+    className="flex-shrink-0 w-64"
     onDragOver={(e) => e.preventDefault()}
     onDrop={(e) => {
       const customerId = e.dataTransfer.getData('customerId');
@@ -304,7 +304,7 @@ export default function FunnelPage() {
       {view === 'kanban' ? (
         <div className="flex-1 -mx-4 -my-2 p-0">
           <ScrollArea className="w-full h-full whitespace-nowrap">
-              <div className="flex gap-6 p-4 h-full">
+              <div className="flex gap-3 p-4 h-full">
                   {columns.map(status => (
                       <FunnelColumn
                         key={status}
