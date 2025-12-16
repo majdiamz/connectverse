@@ -23,13 +23,15 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from 'recharts';
-import { getDashboardStats, getConversationData, getPlatformStats } from '@/lib/data';
-import { MessageSquare, Users, CheckCircle, Clock } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Tooltip } from 'recharts';
+import { getDashboardStats, getConversationData, getPlatformStats, getCustomers } from '@/lib/data';
+import { MessageSquare, Users, CheckCircle, Clock, DollarSign } from 'lucide-react';
 import type { ChartConfig } from '@/components/ui/chart';
 import { ChannelIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import type { Customer } from '@/lib/data';
+import { useMemo } from 'react';
 
 const chartData = getConversationData();
 const stats = getDashboardStats();
@@ -46,7 +48,43 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const funnelStages: (Customer['status'])[] = ['new', 'contacted', 'qualified', 'demo', 'won'];
+const stageLabels: Record<Customer['status'], string> = {
+  new: 'New',
+  contacted: 'Contacted',
+  qualified: 'Qualified',
+  demo: 'Demo',
+  won: 'Won',
+  unqualified: 'Unqualified'
+};
+
+const dealsByStageConfig = {
+  amount: {
+    label: "Amount",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
+
 export default function DashboardPage() {
+    const customers = useMemo(() => getCustomers(), []);
+    const dealsByStageData = useMemo(() => {
+        const stageData: { [key in Customer['status']]?: number } = {};
+
+        for (const customer of customers) {
+            if (funnelStages.includes(customer.status)) {
+                const dealAmount = customer.dealHistory.find(d => d.status === 'In Progress')?.amount ?? 0;
+                if (!stageData[customer.status]) {
+                    stageData[customer.status] = 0;
+                }
+                stageData[customer.status]! += dealAmount;
+            }
+        }
+        return funnelStages.map(stage => ({
+            stage: stageLabels[stage],
+            amount: stageData[stage] ?? 0,
+        }));
+    }, [customers]);
+
   return (
     <div className="space-y-8">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -92,7 +130,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
             <CardTitle>Conversation Trends</CardTitle>
@@ -129,6 +167,38 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
         <Card>
+            <CardHeader>
+                <CardTitle>Deals by Stage</CardTitle>
+                <CardDescription>Total value of deals in each funnel stage.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={dealsByStageConfig} className="h-[300px] w-full">
+                    <BarChart data={dealsByStageData} accessibilityLayer>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="stage"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                        />
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={10}
+                            tickFormatter={(value) => `$${value / 1000}k`}
+                        />
+                        <Tooltip
+                            cursor={false}
+                            content={<ChartTooltipContent formatter={(value) => `$${Number(value).toLocaleString()}`} />}
+                        />
+                        <Bar dataKey="amount" fill="var(--color-amount)" radius={4}>
+                             <LabelList dataKey="amount" position="top" offset={5} formatter={(value: number) => `$${value.toLocaleString()}`} className="fill-foreground text-xs" />
+                        </Bar>
+                    </BarChart>
+                </ChartContainer>
+            </CardContent>
+        </Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Platform Stats</CardTitle>
             <CardDescription>Performance metrics for each connected channel.</CardDescription>
