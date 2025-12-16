@@ -295,7 +295,7 @@ export default function FunnelPage() {
         </CardContent>
       </Card>
 
-       <div className="flex items-center justify-end gap-2">
+       <div className="flex items-center justify-start gap-2">
         <Button variant={view === 'kanban' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('kanban')}>
           <LayoutGrid className="h-4 w-4" />
         </Button>
@@ -327,5 +327,3 @@ export default function FunnelPage() {
     </div>
   );
 }
-
-    
