@@ -1,4 +1,5 @@
 
+
 export type Channel = "whatsapp" | "messenger" | "instagram" | "tiktok";
 
 export interface User {
@@ -60,7 +61,15 @@ export const currentUser: User = {
   avatarUrl: "https://picsum.photos/seed/user/100/100",
 };
 
-const customers: Customer[] = [
+const now = new Date();
+const yesterday = new Date(now);
+yesterday.setDate(yesterday.getDate() - 1);
+
+const formatTimestamp = (date: Date) => {
+    return date.toISOString();
+}
+
+let customers: Customer[] = [
   { id: "cust_01", name: "Sarah Johnson", email: "sarah.j@example.com", phone: "+1-555-0101", avatarUrl: "https://picsum.photos/seed/101/100/100", joined: "2023-05-12", tags: ["priority"], channel: "whatsapp", status: 'new', dealName: "Q3 Enterprise Plan", dealHistory: [{ id: 'deal_01', name: 'Q2 Basic Plan', status: 'Won', amount: 5000, closeDate: '2023-03-15' }, { id: 'deal_02', name: 'Q3 Enterprise Plan', status: 'In Progress', amount: 25000, closeDate: '2023-09-30' }] },
   { id: "cust_02", name: "Michael Chen", email: "m.chen@example.com", phone: "+1-555-0102", avatarUrl: "https://picsum.photos/seed/102/100/100", joined: "2023-05-15", tags: ["interested"], channel: "messenger", status: 'contacted', dealName: "Startup Package", dealHistory: [{ id: 'deal_03', name: 'Startup Package', status: 'In Progress', amount: 2000, closeDate: '2023-08-20' }] },
   { id: "cust_03", name: "Emily Rodriguez", email: "emily.r@example.com", phone: "+1-555-0103", avatarUrl: "https://picsum.photos/seed/103/100/100", joined: "2023-05-20", tags: ["follow_up"], channel: "instagram", status: 'qualified', dealName: "Social Media Pro", dealHistory: [{ id: 'deal_04', name: 'Social Media Pro', status: 'In Progress', amount: 3500, closeDate: '2023-08-25' }] },
@@ -123,15 +132,7 @@ const customers: Customer[] = [
   ]
 }));
 
-const now = new Date();
-const yesterday = new Date(now);
-yesterday.setDate(yesterday.getDate() - 1);
-
-const formatTimestamp = (date: Date) => {
-    return date.toISOString();
-}
-
-export const conversations: Conversation[] = [
+let conversations: Conversation[] = [
   {
     id: "conv_01",
     customer: customers[0],
@@ -219,10 +220,42 @@ export const getCustomers = () => {
   return customers;
 }
 
+export const updateCustomer = (updatedCustomer: Customer) => {
+    const index = customers.findIndex(c => c.id === updatedCustomer.id);
+    if (index !== -1) {
+        customers[index] = updatedCustomer;
+    }
+};
+
+export const updateCustomerStatus = (customerId: string, status: CustomerStatus) => {
+    const customer = customers.find(c => c.id === customerId);
+    if (customer) {
+        customer.status = status;
+    }
+};
+
+export const addDealToCustomer = (customerId: string, deal: Deal) => {
+    const customer = customers.find(c => c.id === customerId);
+    if (customer) {
+        customer.dealHistory.push(deal);
+        if(customer.status === 'unqualified' || customer.status === 'won') {
+           customer.status = 'new';
+        }
+    }
+};
+
+let allConversationsInitialized = false;
+
 export const getConversations = () => {
-  // Only return conversations for the first 5 customers for demo purposes
+  if (allConversationsInitialized) {
+    // on subsequent calls, update conversations with latest customer data
+    return conversations.map(conv => {
+        const updatedCustomer = customers.find(c => c.id === conv.customer.id);
+        return updatedCustomer ? { ...conv, customer: updatedCustomer } : conv;
+    });
+  }
+
   const customerIdsWithConversations = new Set(conversations.map(c => c.customer.id));
-  const customersWithConversations = customers.filter(c => customerIdsWithConversations.has(c.id));
   const customersWithoutConversations = customers.filter(c => !customerIdsWithConversations.has(c.id));
 
   const newConversations = customersWithoutConversations.map((customer, index) => ({
@@ -235,8 +268,17 @@ export const getConversations = () => {
     ]
   }));
   
-  return [...conversations, ...newConversations];
+  conversations = [...conversations, ...newConversations];
+  allConversationsInitialized = true;
+  return conversations;
 }
+
+export const updateConversationUnreadCount = (conversationId: string, unreadCount: number) => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+        conversation.unreadCount = unreadCount;
+    }
+};
 
 export const getDashboardStats = () => {
   return {
@@ -261,5 +303,3 @@ export const getConversationData = () => {
 export const getPlatformStats = () => {
     return platformStats;
 }
-
-    

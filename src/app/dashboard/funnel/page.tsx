@@ -4,7 +4,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Customer, Conversation, Channel } from '@/lib/data';
-import { getCustomers, getConversations } from '@/lib/data';
+import { getCustomers, getConversations, updateCustomerStatus } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -257,11 +257,8 @@ export default function FunnelPage() {
 
 
   const handleDrop = (customerId: string, newStatus: Customer['status']) => {
-    setAllCustomers(prevCustomers =>
-      prevCustomers.map(c =>
-        c.id === customerId ? { ...c, status: newStatus } : c
-      )
-    );
+    updateCustomerStatus(customerId, newStatus);
+    setAllCustomers(getCustomers());
   };
   
   const resetFilters = () => {
@@ -344,7 +341,3 @@ export default function FunnelPage() {
     </div>
   );
 }
-
-    
-
-    

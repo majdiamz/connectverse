@@ -1,10 +1,11 @@
 
+
 'use client';
 
 import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Conversation, Message, Customer, CustomerStatus, Deal } from '@/lib/data';
-import { getConversations, currentUser } from '@/lib/data';
+import { getConversations, currentUser, updateConversationUnreadCount, updateCustomerStatus, addDealToCustomer } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -560,10 +561,8 @@ function InboxPageContent() {
   }
   
   const handleSelectConversation = (conversation: Conversation) => {
-    const newConversations = allConversations.map(c => 
-      c.id === conversation.id ? {...c, unreadCount: 0} : c
-    );
-    setAllConversations(newConversations);
+    updateConversationUnreadCount(conversation.id, 0);
+    setAllConversations(getConversations());
     
     // Using window.history.pushState to update URL without page reload
     const url = new URL(window.location.href);
@@ -581,23 +580,13 @@ function InboxPageContent() {
   }
   
   const handleStatusChange = (customerId: string, newStatus: CustomerStatus) => {
-    setAllConversations(prev => 
-      prev.map(conv => 
-        conv.customer.id === customerId 
-          ? { ...conv, customer: { ...conv.customer, status: newStatus } } 
-          : conv
-      )
-    );
+    updateCustomerStatus(customerId, newStatus);
+    setAllConversations(getConversations());
   };
 
   const handleDealCreate = (customerId: string, deal: Deal) => {
-    setAllConversations(prev => 
-      prev.map(conv => 
-        conv.customer.id === customerId 
-          ? { ...conv, customer: { ...conv.customer, dealHistory: [...conv.customer.dealHistory, deal] } }
-          : conv
-      )
-    );
+    addDealToCustomer(customerId, deal);
+    setAllConversations(getConversations());
   };
 
   const filtersWidget = (
@@ -653,7 +642,7 @@ function InboxPageContent() {
 
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-2">
+    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-1">
       <div className="flex flex-col gap-2">
         <div className="flex-1 flex flex-col min-h-0">
           <ConversationList 
@@ -703,5 +692,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
