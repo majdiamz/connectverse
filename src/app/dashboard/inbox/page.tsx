@@ -23,7 +23,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 
 const conversationsData = getConversations();
 
-const MESSAGES_PER_PAGE = 10;
+const MESSAGES_PER_PAGE = 8;
 const CONVERSATIONS_PER_PAGE = 10;
 
 const statusColors: { [key in Customer['status']]: string } = {
@@ -514,7 +514,7 @@ function InboxPageContent() {
 
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-1">
+    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-0.5">
       <div className="flex flex-col gap-2">
         <div className="flex-1 flex flex-col min-h-0">
           <ConversationList 
