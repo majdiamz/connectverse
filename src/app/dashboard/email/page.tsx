@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { getEmails, addEmail, updateEmail, currentUser, type Email } from '@/lib/data';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
@@ -287,13 +287,13 @@ function EmailPageContent() {
     }, [allEmails, selectedEmailId, filteredEmails]);
     
     // Auto-select first email in folder if none is selected
-    useState(() => {
+    useEffect(() => {
         if (!selectedEmailId && filteredEmails.length > 0) {
             const url = new URL(window.location.href);
             url.searchParams.set('emailId', filteredEmails[0].id);
             window.history.replaceState({ path: url.href }, '', url.href);
         }
-    });
+    }, [selectedEmailId, filteredEmails]);
 
     return (
         <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[250px_350px_1fr] lg:grid-cols-[250px_450px_1fr] gap-1">
