@@ -1,0 +1,14 @@
+diff --git a/node_modules/react-quill/package.json b/node_modules/react-quill/package.json
+index 35a90ce..69a5957 100644
+--- a/node_modules/react-quill/package.json
++++ b/node_modules/react-quill/package.json
+@@ -64,7 +64,7 @@
+     "react-dom": "^16 || ^17 || ^18"
+   },
+   "peerDependencies": {
+-    "react": "^16 || ^17 || ^18",
++    "react": "^16 || ^17 || ^18 || ^19",
+     "react-dom": "^16 || ^17 || ^18"
+   },
+   "repository": {
+

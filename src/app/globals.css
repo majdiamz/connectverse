@@ -82,3 +82,68 @@
     @apply bg-background text-foreground;
   }
 }
+
+.prose {
+    --tw-prose-body: hsl(var(--foreground));
+    --tw-prose-headings: hsl(var(--foreground));
+    --tw-prose-lead: hsl(var(--muted-foreground));
+    --tw-prose-links: hsl(var(--primary));
+    --tw-prose-bold: hsl(var(--foreground));
+    --tw-prose-counters: hsl(var(--muted-foreground));
+    --tw-prose-bullets: hsl(var(--border));
+    --tw-prose-hr: hsl(var(--border));
+    --tw-prose-quotes: hsl(var(--foreground));
+    --tw-prose-quote-borders: hsl(var(--border));
+    --tw-prose-captions: hsl(var(--muted-foreground));
+    --tw-prose-code: hsl(var(--foreground));
+    --tw-prose-pre-code: hsl(var(--foreground));
+    --tw-prose-pre-bg: hsl(var(--muted));
+    --tw-prose-th-borders: hsl(var(--border));
+    --tw-prose-td-borders: hsl(var(--border));
+}
+
+.dark .prose {
+    --tw-prose-body: hsl(var(--foreground));
+    --tw-prose-headings: hsl(var(--foreground));
+    --tw-prose-lead: hsl(var(--muted-foreground));
+    --tw-prose-links: hsl(var(--primary));
+    --tw-prose-bold: hsl(var(--foreground));
+    --tw-prose-counters: hsl(var(--muted-foreground));
+    --tw-prose-bullets: hsl(var(--border));
+    --tw-prose-hr: hsl(var(--border));
+    --tw-prose-quotes: hsl(var(--foreground));
+    --tw-prose-quote-borders: hsl(var(--border));
+    --tw-prose-captions: hsl(var(--muted-foreground));
+    --tw-prose-code: hsl(var(--foreground));
+    --tw-prose-pre-code: hsl(var(--foreground));
+    --tw-prose-pre-bg: hsl(var(--muted));
+    --tw-prose-th-borders: hsl(var(--border));
+    --tw-prose-td-borders: hsl(var(--border));
+}
+
+.ql-editor {
+    min-height: 16rem;
+}
+
+.ql-toolbar.ql-snow {
+    border-radius: 0.5rem 0.5rem 0 0;
+    border-color: hsl(var(--border));
+}
+
+.ql-container.ql-snow {
+    border-radius: 0 0 0.5rem 0.5rem;
+    border-color: hsl(var(--border));
+}
+
+.dark .ql-snow .ql-stroke {
+    stroke: hsl(var(--primary-foreground));
+}
+
+.dark .ql-snow .ql-picker-label {
+    color: hsl(var(--primary-foreground));
+}
+
+.dark .ql-snow .ql-picker-options {
+    background-color: hsl(var(--background));
+    border-color: hsl(var(--border));
+}
