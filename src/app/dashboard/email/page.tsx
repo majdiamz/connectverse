@@ -29,6 +29,11 @@ const EmailList = ({
   onSelectEmail: (id: string) => void;
   selectedEmailId: string | null;
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+      setIsMounted(true);
+  }, []);
+
   const formatTimestamp = (timestamp: string) => {
     const date = parseISO(timestamp);
     if (isToday(date)) return format(date, 'p');
@@ -63,7 +68,7 @@ const EmailList = ({
               <div className="flex-1 overflow-hidden">
                 <div className="flex justify-between items-center">
                   <p className={cn("font-semibold truncate", !email.isRead && "text-primary")}>{email.from.name}</p>
-                  <p className="text-xs text-muted-foreground">{formatTimestamp(email.timestamp)}</p>
+                  <p className="text-xs text-muted-foreground">{isMounted ? formatTimestamp(email.timestamp) : ''}</p>
                 </div>
                 <p className="text-sm truncate font-medium">{email.subject}</p>
                 <p className="text-xs text-muted-foreground truncate">{email.body.replace(/<[^>]*>?/gm, ' ')}</p>
@@ -77,6 +82,11 @@ const EmailList = ({
 };
 
 const EmailView = ({ email }: { email: Email | null }) => {
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+    
     if (!email) {
         return (
             <div className="h-full flex flex-col items-center justify-center bg-card border-x">
@@ -106,7 +116,7 @@ const EmailView = ({ email }: { email: Email | null }) => {
                             <p className="text-xs text-muted-foreground">{email.from.email}</p>
                         </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">{formatTimestamp(email.timestamp)}</p>
+                    <p className="text-xs text-muted-foreground">{isMounted ? formatTimestamp(email.timestamp) : ''}</p>
                 </div>
                 <h2 className="text-lg font-semibold mt-3">{email.subject}</h2>
             </CardHeader>
