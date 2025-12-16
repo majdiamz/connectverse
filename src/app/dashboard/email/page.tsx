@@ -51,30 +51,34 @@ const EmailList = ({
       </CardHeader>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
-          {emails.map(email => (
-            <button
-              key={email.id}
-              onClick={() => onSelectEmail(email.id)}
-              className={cn(
-                "w-full text-left p-3 rounded-lg hover:bg-accent transition-colors flex gap-3 items-start",
-                selectedEmailId === email.id && "bg-accent",
-                !email.isRead && "bg-primary/10"
-              )}
-            >
-              <Avatar className="h-9 w-9 border">
-                <AvatarImage src={email.from.avatar} />
-                <AvatarFallback>{email.from.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 overflow-hidden">
-                <div className="flex justify-between items-center">
-                  <p className={cn("font-semibold truncate", !email.isRead && "text-primary")}>{email.from.name}</p>
-                  <p className="text-xs text-muted-foreground">{isMounted ? formatTimestamp(email.timestamp) : ''}</p>
+          {emails.map(email => {
+            const plainBody = email.body.replace(/<[^>]*>?/gm, ' ');
+            const snippet = plainBody.length > 25 ? `${plainBody.substring(0, 25)}...` : plainBody;
+            return (
+              <button
+                key={email.id}
+                onClick={() => onSelectEmail(email.id)}
+                className={cn(
+                  "w-full text-left p-3 rounded-lg hover:bg-accent transition-colors flex gap-3 items-start",
+                  selectedEmailId === email.id && "bg-accent",
+                  !email.isRead && "bg-primary/10"
+                )}
+              >
+                <Avatar className="h-9 w-9 border">
+                  <AvatarImage src={email.from.avatar} />
+                  <AvatarFallback>{email.from.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 overflow-hidden">
+                  <div className="flex justify-between items-center">
+                    <p className={cn("font-semibold truncate", !email.isRead && "text-primary")}>{email.from.name}</p>
+                    <p className="text-xs text-muted-foreground">{isMounted ? formatTimestamp(email.timestamp) : ''}</p>
+                  </div>
+                  <p className="text-sm truncate font-medium">{email.subject}</p>
+                  <p className="text-xs text-muted-foreground truncate">{snippet}</p>
                 </div>
-                <p className="text-sm truncate font-medium">{email.subject}</p>
-                <p className="text-xs text-muted-foreground truncate">{email.body.replace(/<[^>]*>?/gm, ' ')}</p>
-              </div>
-            </button>
-          ))}
+              </button>
+            )
+          })}
         </div>
       </ScrollArea>
     </Card>
