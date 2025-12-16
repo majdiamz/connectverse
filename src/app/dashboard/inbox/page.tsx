@@ -25,6 +25,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 const conversationsData = getConversations();
 
 const MESSAGES_PER_PAGE = 10;
+const CONVERSATIONS_PER_PAGE = 10;
 
 const ConversationList = ({ 
     conversations,
@@ -314,6 +315,7 @@ function InboxPageContent() {
   const [channelFilter, setChannelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState<DateRange | undefined>();
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredConversations = useMemo(() => {
     return conversationsData
@@ -330,24 +332,40 @@ function InboxPageContent() {
       });
   }, [search, channelFilter, statusFilter, dateFilter]);
 
+  const totalPages = Math.ceil(filteredConversations.length / CONVERSATIONS_PER_PAGE);
+
+  const paginatedConversations = useMemo(() => {
+    const startIndex = (currentPage - 1) * CONVERSATIONS_PER_PAGE;
+    const endIndex = startIndex + CONVERSATIONS_PER_PAGE;
+    return filteredConversations.slice(startIndex, endIndex);
+  }, [filteredConversations, currentPage]);
+
+  const handlePreviousPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
   const resetFilters = () => {
     setSearch('');
     setChannelFilter('');
     setStatusFilter('');
     setDateFilter(undefined);
+    setCurrentPage(1);
   }
 
   useEffect(() => {
     const initialConversation = conversationsData.find(c => c.id === conversationId);
     if (initialConversation) {
       setSelectedConversation(initialConversation);
-    } else if (!conversationId && filteredConversations.length > 0) {
-      // If no conversation is selected via URL, select the first one from the filtered list.
-      setSelectedConversation(filteredConversations[0]);
+    } else if (!conversationId && paginatedConversations.length > 0) {
+      setSelectedConversation(paginatedConversations[0]);
     } else {
       setSelectedConversation(null);
     }
-  }, [conversationId, filteredConversations]);
+  }, [conversationId, paginatedConversations]);
 
 
   return (
@@ -356,17 +374,17 @@ function InboxPageContent() {
         <Accordion type="single" collapsible>
             <AccordionItem value="filters" className="border-b-0">
                 <Card>
-                    <div className='flex items-center justify-between p-4 border-b'>
+                    <CardHeader className='p-4 border-b flex-row items-center justify-between'>
                         <AccordionTrigger className="p-0 hover:no-underline flex-1">
                             <CardTitle className="text-lg">Filters</CardTitle>
                         </AccordionTrigger>
-                        <Button variant="ghost" size="sm" onClick={resetFilters}>
+                        <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-4">
                             <FilterX className="h-4 w-4 mr-2" />
                             Reset
                         </Button>
-                    </div>
+                    </CardHeader>
                     <AccordionContent>
-                        <CardContent className="p-4 pt-0">
+                        <CardContent className="p-4 pt-4">
                           <div className="space-y-4">
                               <div className="relative">
                                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -401,12 +419,34 @@ function InboxPageContent() {
                 </Card>
             </AccordionItem>
         </Accordion>
-
-        <ConversationList 
-          conversations={filteredConversations}
-          onSelectConversation={setSelectedConversation} 
-          selectedConversationId={selectedConversation?.id ?? null} 
-        />
+        <div className="flex-1 flex flex-col min-h-0">
+          <ConversationList 
+            conversations={paginatedConversations}
+            onSelectConversation={setSelectedConversation} 
+            selectedConversationId={selectedConversation?.id ?? null} 
+          />
+          <div className="flex items-center justify-end space-x-2 py-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       </div>
       <MessageView conversation={selectedConversation} />
       <CustomerProfile customer={selectedConversation?.customer ?? null} />
@@ -421,3 +461,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    
