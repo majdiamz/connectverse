@@ -348,7 +348,11 @@ const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDe
 
 
 const CustomerProfile = ({ customer, onStatusChange, onDealCreate, children }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, onDealCreate: (customerId: string, deal: Deal) => void, children: React.ReactNode }) => {
-    
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     const handleDealCreate = (deal: Deal) => {
         if (customer) {
             onDealCreate(customer.id, deal);
@@ -418,7 +422,7 @@ const CustomerProfile = ({ customer, onStatusChange, onDealCreate, children }: {
                                   <div key={deal.id} className="text-xs p-2 bg-muted/50 rounded-md">
                                       <div className="flex justify-between font-medium">
                                           <span>{deal.name}</span>
-                                          <span>${deal.amount.toLocaleString()}</span>
+                                          <span>${isMounted ? deal.amount.toLocaleString() : '...'}</span>
                                       </div>
                                       <div className="flex justify-between text-muted-foreground">
                                            <span>{deal.status}</span>
@@ -649,7 +653,7 @@ function InboxPageContent() {
 
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-0.25">
+    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-2">
       <div className="flex flex-col gap-2">
         <div className="flex-1 flex flex-col min-h-0">
           <ConversationList 
@@ -699,3 +703,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    
