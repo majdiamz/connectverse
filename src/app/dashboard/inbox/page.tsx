@@ -182,17 +182,17 @@ function InboxPageContent() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   useEffect(() => {
-    startTransition(() => {
-      const initialConversation = conversationsData.find(c => c.id === conversationId);
-      if (initialConversation) {
-        setSelectedConversation(initialConversation);
-      } else if (conversationId === null) {
-        setSelectedConversation(conversationsData[0]);
-      } else {
-        setSelectedConversation(null);
-      }
-    });
+    const initialConversation = conversationsData.find(c => c.id === conversationId);
+    if (initialConversation) {
+      setSelectedConversation(initialConversation);
+    } else if (!conversationId && conversationsData.length > 0) {
+      // If no conversation is selected via URL, select the first one.
+      setSelectedConversation(conversationsData[0]);
+    } else {
+      setSelectedConversation(null);
+    }
   }, [conversationId]);
+
 
   return (
     <div className="h-[calc(100vh-10rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px]">
