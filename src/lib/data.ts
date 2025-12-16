@@ -1,5 +1,4 @@
 
-
 export type Channel = "whatsapp" | "messenger" | "instagram" | "tiktok";
 
 export interface User {
@@ -55,6 +54,20 @@ export interface PlatformStats {
   conversionRate: number;
 }
 
+export interface Email {
+    id: string;
+    from: {
+        name: string;
+        email: string;
+        avatar: string;
+    };
+    subject: string;
+    body: string;
+    timestamp: string;
+    isRead: boolean;
+    folder: 'inbox' | 'sent' | 'drafts' | 'trash';
+}
+
 export const currentUser: User = {
   id: "user_01",
   name: "Alex Green",
@@ -65,7 +78,7 @@ const now = new Date();
 const yesterday = new Date(now);
 yesterday.setDate(yesterday.getDate() - 1);
 
-const formatTimestamp = (date: Date) => {
+const formatTimestamp = (date: Date): string => {
     return date.toISOString();
 }
 
@@ -216,6 +229,45 @@ export const businessInfo = {
   email: "contact@connectverse.com",
 };
 
+let emails: Email[] = [
+    {
+        id: 'email_01',
+        from: { name: 'TechCrunch', email: 'updates@techcrunch.com', avatar: 'https://picsum.photos/seed/301/100/100' },
+        subject: 'Latest in AI and Startups',
+        body: '...<p>Hello Alex,</p><p>Here are the top stories from TechCrunch this week. AI is taking over, startups are booming, and we have the inside scoop...</p>',
+        timestamp: formatTimestamp(new Date(now.getTime() - 1 * 60 * 60000)),
+        isRead: false,
+        folder: 'inbox',
+    },
+    {
+        id: 'email_02',
+        from: { name: 'Sarah Johnson', email: 'sarah.j@example.com', avatar: 'https://picsum.photos/seed/101/100/100' },
+        subject: 'Re: Quick Question',
+        body: '<p>Hi Alex,</p><p>Just following up on our conversation from yesterday. Do you have any updates?</p><p>Best,<br/>Sarah</p>',
+        timestamp: formatTimestamp(new Date(now.getTime() - 3 * 60 * 60000)),
+        isRead: true,
+        folder: 'inbox',
+    },
+    {
+        id: 'email_03',
+        from: { name: 'Design Weekly', email: 'newsletter@designweekly.co', avatar: 'https://picsum.photos/seed/302/100/100' },
+        subject: 'Your weekly dose of design inspiration',
+        body: '<p>This week, we are looking at the latest trends in neumorphism and how to apply them to your projects...</p>',
+        timestamp: formatTimestamp(new Date(yesterday.getTime())),
+        isRead: true,
+        folder: 'inbox',
+    },
+    {
+        id: 'email_04',
+        from: { name: 'Alex Green', email: 'alex.green@example.com', avatar: currentUser.avatarUrl },
+        subject: 'Meeting Notes from today',
+        body: '<p>Hi Team,</p><p>Here are the notes from our meeting this morning. Please review and add any action items I might have missed.</p>',
+        timestamp: formatTimestamp(new Date(yesterday.getTime() - 2 * 60 * 60000)),
+        isRead: true,
+        folder: 'sent',
+    },
+];
+
 export const getCustomers = () => {
   return customers;
 }
@@ -277,6 +329,21 @@ export const updateConversationUnreadCount = (conversationId: string, unreadCoun
     const conversation = conversations.find(c => c.id === conversationId);
     if (conversation) {
         conversation.unreadCount = unreadCount;
+    }
+};
+
+export const getEmails = () => {
+    return emails;
+}
+
+export const addEmail = (email: Email) => {
+    emails.unshift(email);
+}
+
+export const updateEmail = (emailId: string, updates: Partial<Email>) => {
+    const index = emails.findIndex(e => e.id === emailId);
+    if (index !== -1) {
+        emails[index] = { ...emails[index], ...updates };
     }
 };
 

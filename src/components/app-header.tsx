@@ -11,8 +11,12 @@ export function AppHeader() {
   const getPageTitle = () => {
     const pathParts = pathname.split('/').filter(Boolean);
     if (pathParts.length > 1) {
-      const title = pathParts[pathParts.length -1];
+      const title = pathParts[pathParts.length - 1];
       if (title.toLowerCase() === 'faq') return 'FAQ';
+      // Handle cases like /dashboard/email?emailId=...
+      if (pathParts[1].toLowerCase() === 'email' && title.toLowerCase() !== 'email') {
+          return 'Email';
+      }
       return title.charAt(0).toUpperCase() + title.slice(1);
     }
     switch (pathname) {

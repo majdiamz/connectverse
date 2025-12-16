@@ -24,6 +24,7 @@ import {
   Plug,
   HelpCircle,
   Server,
+  Mail,
 } from 'lucide-react';
 import { currentUser } from '@/lib/data';
 import { Separator } from './ui/separator';
@@ -31,6 +32,7 @@ import { Separator } from './ui/separator';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/inbox', icon: MessageSquare, label: 'Inbox' },
+  { href: '/dashboard/email', icon: Mail, label: 'Email' },
   { href: '/dashboard/customers', icon: Users, label: 'Customers' },
   { href: '/dashboard/funnel', icon: KanbanSquare, label: 'Funnel' },
   { href: '/dashboard/integrations', icon: Plug, label: 'Integrations' },
@@ -61,7 +63,7 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.href}>
               <Link href={item.href}>
                 <SidebarMenuButton
-                  isActive={pathname === item.href}
+                  isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
                   tooltip={{ children: item.label }}
                 >
                   <item.icon />
@@ -76,15 +78,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t">
         <SidebarMenu>
             <SidebarMenuItem>
-                <Link href="/dashboard/settings">
-                    <SidebarMenuButton isActive={pathname === '/dashboard/settings'} tooltip={{children: "Settings"}}>
-                        <Settings />
-                        <span>Settings</span>
-                    </SidebarMenuButton>
-                </Link>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <Link href="/dashboard/support">
+                <Link href="/dashboard/support">
                 <SidebarMenuButton isActive={pathname === '/dashboard/support'} tooltip={{children: "Support"}}>
                     <LifeBuoy />
                     <span>Support</span>
