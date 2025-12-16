@@ -156,7 +156,7 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
-    return format(date, "MMM d, yyyy 'at' h:mm a");
+    return format(date, "dd/MM/yyyy HH:mm");
   };
 
 
@@ -396,7 +396,7 @@ function InboxPageContent() {
         <Accordion type="single" collapsible>
             <AccordionItem value="filters" className="border-b-0">
                 <Card>
-                    <CardHeader className='p-4 border-b flex-row items-center'>
+                    <CardHeader className='p-4 border-b flex-row items-center justify-between'>
                          <AccordionTrigger className="p-0 hover:no-underline flex-1">
                             <CardTitle className="text-lg">Filters</CardTitle>
                         </AccordionTrigger>
@@ -483,3 +483,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    
