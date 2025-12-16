@@ -3,7 +3,7 @@
 
 import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { Conversation, Message, Customer, CustomerStatus } from '@/lib/data';
+import type { Conversation, Message, Customer, CustomerStatus, Deal } from '@/lib/data';
 import { getConversations, currentUser } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -13,14 +13,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ChannelIcon } from '@/components/icons';
-import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, FilterX, Calendar as CalendarIcon, ArrowUp, KanbanSquare } from 'lucide-react';
+import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, FilterX, Calendar as CalendarIcon, ArrowUp, KanbanSquare, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
-import { format, isToday, isYesterday, formatDistanceToNow } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 const conversationsData = getConversations();
 
@@ -37,6 +43,14 @@ const statusColors: { [key in Customer['status']]: string } = {
 };
 
 const funnelStages: CustomerStatus[] = ['new', 'contacted', 'qualified', 'demo', 'won', 'unqualified'];
+
+const dealFormSchema = z.object({
+    name: z.string().min(1, 'Deal name is required.'),
+    amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
+});
+
+type DealFormData = z.infer<typeof dealFormSchema>;
+
 
 const ConversationList = ({ 
     conversations,
@@ -259,74 +273,184 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
   );
 }
 
-const CustomerProfile = ({ customer, onStatusChange, children }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, children: React.ReactNode }) => (
-  <div className="hidden lg:flex lg:flex-col h-full gap-2">
-    {children}
-    <Card className="flex-1">
-      {customer ? (
-        <>
-          <CardHeader className="items-center p-6">
-            <Avatar className="h-20 w-20 mb-2">
-              <AvatarImage src={customer.avatarUrl} alt={customer.name} />
-              <AvatarFallback>{customer.name.substring(0, 2)}</AvatarFallback>
-            </Avatar>
-            <CardTitle className="text-xl">{customer.name}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 space-y-4 px-6">
-              <Separator />
-              <div className="space-y-2 text-sm">
-                  <h4 className="font-semibold">Contact Details</h4>
-                  <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{customer.email}</span>
+const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDealCreate: (deal: Deal) => void }) => {
+    const { toast } = useToast();
+    const [open, setOpen] = useState(false);
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<DealFormData>({
+        resolver: zodResolver(dealFormSchema),
+        defaultValues: { name: '', amount: 0 }
+    });
+
+    const onSubmit = (data: DealFormData) => {
+        const newDeal: Deal = {
+            id: `deal_${Date.now()}`,
+            name: data.name,
+            amount: data.amount,
+            status: 'In Progress',
+            closeDate: new Date().toISOString().split('T')[0],
+        };
+        onDealCreate(newDeal);
+        toast({
+            title: "Deal Created!",
+            description: `${data.name} for $${data.amount.toLocaleString()} has been created for ${customer.name}.`,
+        });
+        reset();
+        setOpen(false);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create Deal
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <DialogHeader>
+                        <DialogTitle>Create New Deal</DialogTitle>
+                        <DialogDescription>
+                            Create a new deal for {customer.name}. Click save when you're done.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="name" className="text-right">
+                                Deal Name
+                            </Label>
+                            <div className="col-span-3">
+                                <Input id="name" {...register("name")} className="w-full" />
+                                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="amount" className="text-right">
+                                Amount
+                            </Label>
+                            <div className="col-span-3">
+                                <Input id="amount" type="number" {...register("amount")} className="w-full" />
+                                {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
+                            </div>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                           <Button type="button" variant="secondary">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit">Save Deal</Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+
+const CustomerProfile = ({ customer, onStatusChange, onDealCreate, children }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, onDealCreate: (customerId: string, deal: Deal) => void, children: React.ReactNode }) => {
+    
+    const handleDealCreate = (deal: Deal) => {
+        if (customer) {
+            onDealCreate(customer.id, deal);
+        }
+    };
+
+    return (
+      <div className="hidden lg:flex lg:flex-col h-full gap-2">
+        {children}
+        <Card className="flex-1">
+          {customer ? (
+            <>
+              <CardHeader className="items-center p-6">
+                <Avatar className="h-20 w-20 mb-2">
+                  <AvatarImage src={customer.avatarUrl} alt={customer.name} />
+                  <AvatarFallback>{customer.name.substring(0, 2)}</AvatarFallback>
+                </Avatar>
+                <CardTitle className="text-xl">{customer.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 space-y-4 px-6">
+                  <Separator />
+                  <div className="space-y-2 text-sm">
+                      <h4 className="font-semibold">Contact Details</h4>
+                      <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{customer.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">{customer.phone}</span>
+                      </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">{customer.phone}</span>
+                  <Separator />
+                  <div className="space-y-2 text-sm">
+                    <h4 className="font-semibold">Funnel Stage</h4>
+                    <div className="flex items-center gap-2">
+                      <KanbanSquare className="h-4 w-4 text-muted-foreground" />
+                      <Select
+                        value={customer.status}
+                        onValueChange={(newStatus) => onStatusChange(customer.id, newStatus as CustomerStatus)}
+                      >
+                        <SelectTrigger className="w-[180px] h-8 text-xs capitalize">
+                          <SelectValue placeholder="Change status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {funnelStages.map(stage => (
+                            <SelectItem key={stage} value={stage} className="capitalize text-xs">
+                              <div className="flex items-center">
+                                <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[stage])}></div>
+                                {stage}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-              </div>
-              <Separator />
-              <div className="space-y-2 text-sm">
-                <h4 className="font-semibold">Funnel Stage</h4>
-                <div className="flex items-center gap-2">
-                  <KanbanSquare className="h-4 w-4 text-muted-foreground" />
-                  <Select
-                    value={customer.status}
-                    onValueChange={(newStatus) => onStatusChange(customer.id, newStatus as CustomerStatus)}
-                  >
-                    <SelectTrigger className="w-[180px] h-8 text-xs capitalize">
-                      <SelectValue placeholder="Change status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {funnelStages.map(stage => (
-                        <SelectItem key={stage} value={stage} className="capitalize text-xs">
-                          <div className="flex items-center">
-                            <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[stage])}></div>
-                            {stage}
+                  <Separator />
+                   <div className="space-y-3 text-sm">
+                      <div className="flex justify-between items-center">
+                          <h4 className="font-semibold">Deals</h4>
+                          <CreateDealDialog customer={customer} onDealCreate={handleDealCreate} />
+                      </div>
+                      <ScrollArea className="h-24">
+                          <div className="space-y-2">
+                              {customer.dealHistory.map(deal => (
+                                  <div key={deal.id} className="text-xs p-2 bg-muted/50 rounded-md">
+                                      <div className="flex justify-between font-medium">
+                                          <span>{deal.name}</span>
+                                          <span>${deal.amount.toLocaleString()}</span>
+                                      </div>
+                                      <div className="flex justify-between text-muted-foreground">
+                                           <span>{deal.status}</span>
+                                          <span>{deal.closeDate}</span>
+                                      </div>
+                                  </div>
+                              ))}
+                              {customer.dealHistory.length === 0 && (
+                                  <p className="text-xs text-muted-foreground text-center py-4">No deals yet.</p>
+                              )}
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-2 text-sm">
-                  <h4 className="font-semibold">Tags</h4>
-                  <div className="flex flex-wrap gap-2">
-                      {customer.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </ScrollArea>
                   </div>
-              </div>
-          </CardContent>
-        </>
-      ) : (
-        <div className="flex flex-1 items-center justify-center text-center">
-          <p className="text-muted-foreground">Customer details will appear here.</p>
-        </div>
-      )}
-    </Card>
-  </div>
-);
+                  <Separator />
+                  <div className="space-y-2 text-sm">
+                      <h4 className="font-semibold">Tags</h4>
+                      <div className="flex flex-wrap gap-2">
+                          {customer.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </div>
+                  </div>
+              </CardContent>
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-center">
+              <p className="text-muted-foreground">Customer details will appear here.</p>
+            </div>
+          )}
+        </Card>
+      </div>
+    );
+};
+
 
 function DateRangePicker({ className, date, onSelect }: React.HTMLAttributes<HTMLDivElement> & { date: DateRange | undefined, onSelect: (date: DateRange | undefined) => void}) {
   return (
@@ -462,6 +586,16 @@ function InboxPageContent() {
     );
   };
 
+  const handleDealCreate = (customerId: string, deal: Deal) => {
+    setAllConversations(prev => 
+      prev.map(conv => 
+        conv.customer.id === customerId 
+          ? { ...conv, customer: { ...conv.customer, dealHistory: [...conv.customer.dealHistory, deal] } }
+          : conv
+      )
+    );
+  };
+
   const filtersWidget = (
     <Accordion type="single" collapsible>
         <AccordionItem value="filters" className="border-b-0">
@@ -549,7 +683,8 @@ function InboxPageContent() {
       <MessageView conversation={getSelectedConversation()} />
       <CustomerProfile 
         customer={getSelectedConversation()?.customer ?? null} 
-        onStatusChange={handleStatusChange} 
+        onStatusChange={handleStatusChange}
+        onDealCreate={handleDealCreate}
       >
         {filtersWidget}
       </CustomerProfile>
@@ -564,5 +699,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
