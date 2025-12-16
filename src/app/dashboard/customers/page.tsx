@@ -124,6 +124,7 @@ export default function CustomersPage() {
               <TableRow>
                 <TableHead>Customer</TableHead>
                 <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden md:table-cell">Phone</TableHead>
                 <TableHead className="hidden md:table-cell">Status</TableHead>
                 <TableHead className="hidden lg:table-cell">Joined</TableHead>
                 <TableHead>Tags</TableHead>
@@ -145,6 +146,7 @@ export default function CustomersPage() {
                     </div>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">{customer.email}</TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">{customer.phone}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     <Badge className={cn("capitalize text-white", statusColors[customer.status])}>
                       <div className={cn("w-2 h-2 rounded-full mr-2", statusColors[customer.status])}></div>
