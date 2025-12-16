@@ -21,6 +21,7 @@ import {
   LogOut,
   LifeBuoy,
   KanbanSquare,
+  Plug,
 } from 'lucide-react';
 import { currentUser } from '@/lib/data';
 import { Separator } from './ui/separator';
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/dashboard/inbox', icon: MessageSquare, label: 'Inbox' },
   { href: '/dashboard/customers', icon: Users, label: 'Customers' },
   { href: '/dashboard/funnel', icon: KanbanSquare, label: 'Funnel' },
+  { href: '/dashboard/integrations', icon: Plug, label: 'Integrations' },
 ];
 
 export function AppSidebar() {
