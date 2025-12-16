@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -98,6 +99,7 @@ export default function DashboardPage() {
                 tickLine={false}
                 axisLine={false}
                 tickMargin={10}
+                tickFormatter={(value) => `${value}%`}
               />
               <ChartTooltip
                 cursor={false}
