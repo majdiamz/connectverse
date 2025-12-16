@@ -58,14 +58,15 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
 
   return (
     <Card
-      className="mb-4 cursor-pointer hover:shadow-lg transition-shadow"
+      className="mb-3 cursor-pointer hover:shadow-lg transition-shadow"
       draggable
       onDragStart={handleDragStart}
       onClick={handleClick}
     >
-      <CardContent className="p-4">
-        <div className="flex-1 mb-3">
+      <CardContent className="p-3">
+        <div className="flex-1 mb-2">
           <p className="font-semibold">{customer.name}</p>
+          <p className="text-sm font-medium text-muted-foreground truncate">{customer.dealName}</p>
           <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
         </div>
         <div className="flex items-center justify-between">
@@ -89,7 +90,7 @@ const FunnelColumn = ({
   onDrop: (customerId: string, newStatus: Customer['status']) => void,
 }) => (
   <div
-    className="flex-shrink-0 w-64"
+    className="flex-shrink-0 w-52"
     onDragOver={(e) => e.preventDefault()}
     onDrop={(e) => {
       const customerId = e.dataTransfer.getData('customerId');
@@ -302,7 +303,7 @@ export default function FunnelPage() {
       {view === 'kanban' ? (
         <div className="flex-1 -mx-4 -my-2 p-0">
           <ScrollArea className="w-full h-full whitespace-nowrap">
-              <div className="flex gap-3 p-4 h-full">
+              <div className="flex gap-1.5 p-4 h-full">
                   {columns.map(status => (
                       <FunnelColumn
                         key={status}
