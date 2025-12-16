@@ -90,7 +90,7 @@ const FunnelColumn = ({
   onDrop: (customerId: string, newStatus: Customer['status']) => void,
 }) => (
   <div
-    className="flex-shrink-0 w-52"
+    className="flex-shrink-0 w-64"
     onDragOver={(e) => e.preventDefault()}
     onDrop={(e) => {
       const customerId = e.dataTransfer.getData('customerId');
@@ -323,3 +323,5 @@ export default function FunnelPage() {
     </div>
   );
 }
+
+    
