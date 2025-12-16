@@ -19,11 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Inbox, Send, FileText, Trash2, Archive, Edit, CornerUpLeft, CornerUpRight, Search, Mail as MailIcon } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-
 
 const EmailList = ({
   emails,
@@ -179,20 +174,11 @@ const ComposeEmailDialog = ({ onSend }: { onSend: (newEmail: Omit<Email, 'id' | 
                         <Label htmlFor="subject" className="text-right">Subject</Label>
                         <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="col-span-3" />
                     </div>
-                    <ReactQuill 
-                        theme="snow" 
+                    <Textarea 
                         value={body} 
-                        onChange={setBody}
-                        className="h-64 mb-12"
-                        modules={{
-                            toolbar: [
-                              [{ 'header': [1, 2, false] }],
-                              ['bold', 'italic', 'underline','strike', 'blockquote'],
-                              [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-                              ['link'],
-                              ['clean']
-                            ],
-                          }}
+                        onChange={(e) => setBody(e.target.value)}
+                        className="h-64"
+                        placeholder="Write your email here..."
                     />
                 </div>
                 <DialogFooter>
