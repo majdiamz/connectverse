@@ -23,7 +23,11 @@ export function UserAvatar() {
     }, []);
 
     if (!isMounted) {
-        return null;
+        return (
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                <Avatar className="h-9 w-9"></Avatar>
+            </Button>
+        );
     }
 
     return (

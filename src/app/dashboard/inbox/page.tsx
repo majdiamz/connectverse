@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ChannelIcon } from '@/components/icons';
-import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, SlidersHorizontal, FilterX, Calendar as CalendarIcon, ArrowUp } from 'lucide-react';
+import { Paperclip, Send, Search, MessageSquareDashed, Mail, Phone, FilterX, Calendar as CalendarIcon, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,46 +34,75 @@ const ConversationList = ({
     conversations: Conversation[],
     onSelectConversation: (conv: Conversation) => void; 
     selectedConversationId: string | null 
-}) => (
-  <Card className="flex flex-col h-full">
-    <ScrollArea className="flex-1">
-      <div className="p-2">
-        {conversations.map((conv) => (
-          <button
-            key={conv.id}
-            className={cn(
-                "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
-                selectedConversationId === conv.id && "bg-accent"
-            )}
-            onClick={() => onSelectConversation(conv)}
-          >
-            <div className="relative">
-              <Avatar className="h-10 w-10 border">
-                <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
-                <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
-                <ChannelIcon channel={conv.channel} className="h-3 w-3" />
-              </div>
+}) => {
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return (
+            <Card className="flex flex-col h-full">
+                <ScrollArea className="flex-1">
+                    <div className="p-2 space-y-2">
+                        {Array.from({ length: 10 }).map((_, i) => (
+                            <div key={i} className="flex items-start gap-3 rounded-lg p-3">
+                                <Avatar className="h-10 w-10 border">
+                                    <AvatarFallback></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 overflow-hidden">
+                                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                                    <div className="h-4 bg-muted rounded w-1/2 mt-1"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </ScrollArea>
+            </Card>
+        )
+    }
+
+    return (
+        <Card className="flex flex-col h-full">
+            <ScrollArea className="flex-1">
+            <div className="p-2">
+                {conversations.map((conv) => (
+                <button
+                    key={conv.id}
+                    className={cn(
+                        "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
+                        selectedConversationId === conv.id && "bg-accent"
+                    )}
+                    onClick={() => onSelectConversation(conv)}
+                >
+                    <div className="relative">
+                    <Avatar className="h-10 w-10 border">
+                        <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
+                        <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
+                        <ChannelIcon channel={conv.channel} className="h-3 w-3" />
+                    </div>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                    <div className="flex items-center justify-between">
+                        <p className="font-semibold truncate">{conv.customer.name}</p>
+                        <p className="text-xs text-muted-foreground">{conv.messages[conv.messages.length - 1].timestamp}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground truncate">{conv.messages[conv.messages.length - 1].text}</p>
+                    </div>
+                    {conv.unreadCount > 0 && (
+                    <div className="flex h-full items-center">
+                        <Badge className="h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
+                    </div>
+                    )}
+                </button>
+                ))}
             </div>
-            <div className="flex-1 overflow-hidden">
-              <div className="flex items-center justify-between">
-                <p className="font-semibold truncate">{conv.customer.name}</p>
-                <p className="text-xs text-muted-foreground">{conv.messages[conv.messages.length - 1].timestamp}</p>
-              </div>
-              <p className="text-sm text-muted-foreground truncate">{conv.messages[conv.messages.length - 1].text}</p>
-            </div>
-            {conv.unreadCount > 0 && (
-              <div className="flex h-full items-center">
-                <Badge className="h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
-              </div>
-            )}
-          </button>
-        ))}
-      </div>
-    </ScrollArea>
-  </Card>
-);
+            </ScrollArea>
+        </Card>
+    )
+};
 
 const MessageView = ({ conversation }: { conversation: Conversation | null }) => {
   const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
@@ -328,10 +357,10 @@ function InboxPageContent() {
             <AccordionItem value="filters" className="border-b-0">
                 <Card>
                     <div className='flex items-center justify-between p-4 border-b'>
-                         <AccordionTrigger className="p-0 hover:no-underline flex-1">
+                        <AccordionTrigger className="p-0 hover:no-underline flex-1">
                             <CardTitle className="text-lg">Filters</CardTitle>
                         </AccordionTrigger>
-                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); resetFilters(); }}>
+                        <Button variant="ghost" size="sm" onClick={resetFilters}>
                             <FilterX className="h-4 w-4 mr-2" />
                             Reset
                         </Button>
@@ -392,5 +421,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
