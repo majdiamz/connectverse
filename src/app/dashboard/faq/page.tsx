@@ -45,7 +45,7 @@ export default function FaqPage() {
               <AccordionTrigger>How do I get a Messenger API Key?</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 text-sm text-muted-foreground">
-                    <p>To integrate Facebook Messenger, you'll need to create a Facebook App and get a Page Access Token.</p>
+                    <p>To integrate Facebook Messenger, you'll need to create a Facebook App and get a Page Access Token. Please note this integration is for Facebook Pages, not personal accounts.</p>
                     <ol className="list-decimal list-inside space-y-2 pl-4">
                         <li>Go to <Link href="https://developers.facebook.com/apps/" target="_blank" className="text-primary underline">Meta for Developers</Link> and create a new app.</li>
                         <li>From the app dashboard, add the "Messenger" product.</li>
