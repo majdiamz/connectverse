@@ -45,6 +45,7 @@ const statusColors: { [key in Customer['status']]: string } = {
 
 const CustomerCard = ({ customer, conversationId }: { customer: Customer; conversationId?: string }) => {
   const router = useRouter();
+  const dealAmount = customer.dealHistory.find(d => d.status === 'In Progress')?.amount ?? 0;
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('customerId', customer.id);
@@ -67,7 +68,7 @@ const CustomerCard = ({ customer, conversationId }: { customer: Customer; conver
         <div className="flex-1 mb-2">
           <p className="font-semibold">{customer.name}</p>
           <p className="text-sm font-medium text-muted-foreground truncate">{customer.dealName}</p>
-          <p className="text-sm text-muted-foreground truncate">{customer.email}</p>
+          <p className="text-sm text-muted-foreground truncate">${dealAmount.toLocaleString()}</p>
         </div>
         <div className="flex items-center justify-between">
           <ChannelIcon channel={customer.channel} className="h-5 w-5 text-muted-foreground" />
@@ -88,37 +89,47 @@ const FunnelColumn = ({
   customers: Customer[],
   conversations: Conversation[],
   onDrop: (customerId: string, newStatus: Customer['status']) => void,
-}) => (
-  <div
-    className="flex-shrink-0 w-64"
-    onDragOver={(e) => e.preventDefault()}
-    onDrop={(e) => {
-      const customerId = e.dataTransfer.getData('customerId');
-      if (customerId) {
-        onDrop(customerId, status);
-      }
-    }}
-  >
-      <Card className="bg-muted/50 h-full">
-          <CardHeader>
-              <CardTitle className="text-base capitalize flex items-center justify-between">
-                <span>{columnTitles[status]}</span>
-                <span className="text-sm font-normal text-muted-foreground bg-background px-2 py-1 rounded-md">{customers.length}</span>
-              </CardTitle>
-          </CardHeader>
-          <CardContent className="h-[calc(100%-4rem)]">
-              <ScrollArea className="h-full pr-4 -mr-4">
-                {customers.map(customer => {
-                  const conversation = conversations.find(c => c.customer.id === customer.id);
-                  return (
-                    <CustomerCard key={customer.id} customer={customer} conversationId={conversation?.id} />
-                  )
-                })}
-              </ScrollArea>
-          </CardContent>
-      </Card>
-  </div>
-);
+}) => {
+  const totalAmount = useMemo(() => {
+    return customers.reduce((acc, customer) => {
+      const deal = customer.dealHistory.find(d => d.status === 'In Progress');
+      return acc + (deal?.amount ?? 0);
+    }, 0);
+  }, [customers]);
+
+  return (
+    <div
+      className="flex-shrink-0 w-64"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        const customerId = e.dataTransfer.getData('customerId');
+        if (customerId) {
+          onDrop(customerId, status);
+        }
+      }}
+    >
+        <Card className="bg-muted/50 h-full">
+            <CardHeader>
+                <CardTitle className="text-base capitalize flex items-center justify-between">
+                  <span>{columnTitles[status]}</span>
+                  <span className="text-sm font-normal text-muted-foreground bg-background px-2 py-1 rounded-md">{customers.length}</span>
+                </CardTitle>
+                <p className="font-semibold text-lg">${totalAmount.toLocaleString()}</p>
+            </CardHeader>
+            <CardContent className="h-[calc(100%-6.5rem)]">
+                <ScrollArea className="h-full pr-4 -mr-4">
+                  {customers.map(customer => {
+                    const conversation = conversations.find(c => c.customer.id === customer.id);
+                    return (
+                      <CustomerCard key={customer.id} customer={customer} conversationId={conversation?.id} />
+                    )
+                  })}
+                </ScrollArea>
+            </CardContent>
+        </Card>
+    </div>
+  );
+};
 
 function DateRangePicker({ className, date, onSelect }: { className?: string, date?: DateRange, onSelect: (range?: DateRange) => void }) {
   return (
@@ -323,5 +334,7 @@ export default function FunnelPage() {
     </div>
   );
 }
+
+    
 
     
