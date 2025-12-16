@@ -6,9 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send } from "lucide-react";
+import { Send, Building, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/data";
+import { currentUser, businessInfo } from "@/lib/data";
+import { Separator } from '@/components/ui/separator';
 
 interface SupportMessage {
   id: number;
@@ -72,8 +73,8 @@ export default function SupportPage() {
 
 
   return (
-    <div className="h-[calc(100vh-10rem)] flex justify-center items-center">
-        <Card className="w-full max-w-2xl h-full flex flex-col">
+    <div className="h-[calc(100vh-10rem)] grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 h-full flex flex-col">
             <CardHeader>
                 <CardTitle className="flex items-center gap-3">
                     <Avatar>
@@ -131,6 +132,32 @@ export default function SupportPage() {
                     </Button>
                 </div>
             </CardFooter>
+        </Card>
+        <Card className="h-full">
+            <CardHeader>
+                <CardTitle>Business Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+                <div className="flex items-center gap-3">
+                    <Building className="h-5 w-5 text-muted-foreground" />
+                    <span className="font-medium">{businessInfo.companyName}</span>
+                </div>
+                <Separator />
+                <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                    <span className="text-muted-foreground">{businessInfo.address}</span>
+                </div>
+                <Separator />
+                <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-muted-foreground">{businessInfo.phone}</span>
+                </div>
+                <Separator />
+                <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-muted-foreground">{businessInfo.email}</span>
+                </div>
+            </CardContent>
         </Card>
     </div>
   );

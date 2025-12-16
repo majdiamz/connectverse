@@ -103,6 +103,13 @@ export const conversations: Conversation[] = [
   },
 ];
 
+export const businessInfo = {
+  companyName: "ConnectVerse Inc.",
+  address: "123 Main Street, Anytown, USA 12345",
+  phone: "+1 (555) 123-4567",
+  email: "contact@connectverse.com",
+};
+
 export const getCustomers = () => {
   return customers;
 }

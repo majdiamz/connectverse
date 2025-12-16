@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
+import { businessInfo } from "@/lib/data";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters."),
@@ -32,10 +32,10 @@ export default function SettingsPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyName: "ConnectVerse Inc.",
-      address: "123 Main Street, Anytown, USA 12345",
-      phone: "+1 (555) 123-4567",
-      email: "contact@connectverse.com",
+      companyName: businessInfo.companyName,
+      address: businessInfo.address,
+      phone: businessInfo.phone,
+      email: businessInfo.email,
     },
   });
 
