@@ -278,7 +278,7 @@ function InboxPageContent() {
         <Accordion type="single" collapsible>
             <AccordionItem value="filters" className="border-b-0">
                 <Card>
-                    <AccordionTrigger className="p-4 border-b">
+                    <AccordionTrigger className="p-4 border-b hover:no-underline">
                         <div className='flex items-center justify-between w-full pr-4'>
                             <CardTitle className="text-lg">Filters</CardTitle>
                             <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); resetFilters(); }}>
@@ -343,5 +343,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    
