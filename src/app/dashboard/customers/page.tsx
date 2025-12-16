@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal, Calendar as CalendarIcon, FilterX, MessageSquare, History, ExternalLink } from "lucide-react";
+import { Search, SlidersHorizontal, Calendar as CalendarIcon, FilterX, MessageSquare, History, ExternalLink, Download } from "lucide-react";
 import { ChannelIcon } from "@/components/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 const statusColors: { [key in Customer['status']]: string } = {
@@ -52,6 +53,7 @@ export default function CustomersPage() {
   const conversations = getConversations();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
   const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
 
@@ -72,6 +74,52 @@ export default function CustomersPage() {
   const getConversationForCustomer = (customerId: string) => {
     return conversations.find(c => c.customer.id === customerId);
   }
+
+  const handleSelectAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      setSelectedCustomers(paginatedCustomers.map(c => c.id));
+    } else {
+      setSelectedCustomers([]);
+    }
+  };
+
+  const handleSelectCustomer = (customerId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedCustomers(prev => [...prev, customerId]);
+    } else {
+      setSelectedCustomers(prev => prev.filter(id => id !== customerId));
+    }
+  };
+
+  const exportToCsv = () => {
+    const customersToExport = customers.filter(c => selectedCustomers.includes(c.id));
+    if (customersToExport.length === 0) return;
+
+    const headers = ['ID', 'Name', 'Email', 'Phone', 'Joined', 'Channel', 'Status', 'Tags'];
+    const csvContent = [
+      headers.join(','),
+      ...customersToExport.map(c => [
+        c.id,
+        `"${c.name}"`,
+        c.email,
+        c.phone,
+        c.joined,
+        c.channel,
+        c.status,
+        `"${c.tags.join('; ')}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "customers.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -131,7 +179,14 @@ export default function CustomersPage() {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input placeholder="Search customers..." className="pl-9" />
                   </div>
-                  <Button>Add Customer</Button>
+                  {selectedCustomers.length > 0 ? (
+                      <Button onClick={exportToCsv}>
+                          <Download className="mr-2 h-4 w-4" />
+                          Export ({selectedCustomers.length})
+                      </Button>
+                  ) : (
+                    <Button>Add Customer</Button>
+                  )}
               </div>
           </div>
         </CardHeader>
@@ -140,6 +195,12 @@ export default function CustomersPage() {
             <Table>
                 <TableHeader>
                 <TableRow>
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={selectedCustomers.length > 0 && selectedCustomers.length === paginatedCustomers.length}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead className="hidden md:table-cell">Email</TableHead>
                     <TableHead className="hidden md:table-cell">Phone</TableHead>
@@ -150,10 +211,19 @@ export default function CustomersPage() {
                 </TableHeader>
                 <TableBody>
                 {paginatedCustomers.map((customer) => (
-                    <DialogTrigger asChild key={customer.id}>
-                        <TableRow className="cursor-pointer" onClick={() => setSelectedCustomer(customer)}>
+                    <TableRow 
+                        key={customer.id} 
+                        data-state={selectedCustomers.includes(customer.id) && "selected"}
+                    >
                         <TableCell>
-                            <div className="flex items-center gap-3">
+                          <Checkbox
+                            checked={selectedCustomers.includes(customer.id)}
+                            onCheckedChange={(checked) => handleSelectCustomer(customer.id, !!checked)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <DialogTrigger asChild>
+                            <div className="flex items-center gap-3 cursor-pointer" onClick={() => setSelectedCustomer(customer)}>
                             <Avatar className="h-10 w-10">
                                 <AvatarImage src={customer.avatarUrl} alt={customer.name} />
                                 <AvatarFallback>{customer.name.charAt(0)}</AvatarFallback>
@@ -163,6 +233,7 @@ export default function CustomersPage() {
                                 <ChannelIcon channel={customer.channel} className="h-4 w-4 text-muted-foreground" />
                             </div>
                             </div>
+                           </DialogTrigger>
                         </TableCell>
                         <TableCell className="hidden md:table-cell text-muted-foreground">{customer.email}</TableCell>
                         <TableCell className="hidden md:table-cell text-muted-foreground">{customer.phone}</TableCell>
@@ -182,8 +253,7 @@ export default function CustomersPage() {
                             ))}
                             </div>
                         </TableCell>
-                        </TableRow>
-                    </DialogTrigger>
+                    </TableRow>
                 ))}
                 </TableBody>
             </Table>
@@ -322,3 +392,5 @@ function DateRangePicker({ className }: React.HTMLAttributes<HTMLDivElement>) {
     </div>
   )
 }
+
+    
