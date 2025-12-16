@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -12,13 +13,14 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const columns: Customer['status'][] = ['new', 'contacted', 'qualified', 'demo', 'unqualified'];
+const columns: Customer['status'][] = ['new', 'contacted', 'qualified', 'demo', 'won', 'unqualified'];
 
 const columnTitles: { [key in Customer['status']]: string } = {
   new: 'New',
   contacted: 'Contacted',
   qualified: 'Qualified',
   demo: 'Demo Scheduled',
+  won: 'Won',
   unqualified: 'Unqualified',
 };
 
@@ -26,8 +28,9 @@ const statusColors: { [key in Customer['status']]: string } = {
   new: 'bg-blue-500',
   contacted: 'bg-yellow-500',
   qualified: 'bg-green-500',
-  unqualified: 'bg-red-500',
   demo: 'bg-purple-500',
+  won: 'bg-emerald-500',
+  unqualified: 'bg-red-500',
 };
 
 const CustomerCard = ({ customer, conversationId }: { customer: Customer; conversationId?: string }) => {

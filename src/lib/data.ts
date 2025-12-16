@@ -7,7 +7,7 @@ export interface User {
   avatarUrl: string;
 }
 
-export type CustomerStatus = 'new' | 'contacted' | 'qualified' | 'unqualified' | 'demo';
+export type CustomerStatus = 'new' | 'contacted' | 'qualified' | 'unqualified' | 'demo' | 'won';
 
 export interface Customer {
   id: string;
