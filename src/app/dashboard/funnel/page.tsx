@@ -276,37 +276,33 @@ export default function FunnelPage() {
     <div className="h-full flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
               <CardTitle>Filters</CardTitle>
-              <div className="flex items-center gap-2">
-                  <Button variant="ghost" onClick={resetFilters}>
-                    <FilterX className="h-4 w-4 mr-2" />
-                    Reset Filters
-                  </Button>
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 min-w-[200px] md:max-w-3xl">
+                  <Select value={channelFilter} onValueChange={(value) => setChannelFilter(value as Channel | '')}>
+                      <SelectTrigger>
+                          <SelectValue placeholder="Filter by source..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="whatsapp">Whatsapp</SelectItem>
+                          <SelectItem value="messenger">Messenger</SelectItem>
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                          <SelectItem value="tiktok">TikTok</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  <Input 
+                    placeholder="Filter by tag..."
+                    value={tagFilter}
+                    onChange={(e) => setTagFilter(e.target.value)}
+                  />
+                  <DateRangePicker date={dateRange} onSelect={setDateRange} />
               </div>
+              <Button variant="ghost" onClick={resetFilters}>
+                <FilterX className="h-4 w-4 mr-2" />
+                Reset Filters
+              </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Select value={channelFilter} onValueChange={(value) => setChannelFilter(value as Channel | '')}>
-                  <SelectTrigger>
-                      <SelectValue placeholder="Filter by source..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="whatsapp">Whatsapp</SelectItem>
-                      <SelectItem value="messenger">Messenger</SelectItem>
-                      <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="tiktok">TikTok</SelectItem>
-                  </SelectContent>
-              </Select>
-              <Input 
-                placeholder="Filter by tag..."
-                value={tagFilter}
-                onChange={(e) => setTagFilter(e.target.value)}
-              />
-              <DateRangePicker date={dateRange} onSelect={setDateRange} />
-          </div>
-        </CardContent>
       </Card>
 
        <div className="flex items-center justify-start gap-2">
