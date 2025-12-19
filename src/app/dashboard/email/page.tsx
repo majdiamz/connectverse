@@ -320,7 +320,7 @@ function EmailPageContent() {
     }, [selectedEmailId, filteredEmails]);
 
     return (
-        <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[250px_350px_1fr] lg:grid-cols-[250px_450px_1fr] gap-1">
+        <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[250px_300px_1fr] lg:grid-cols-[250px_350px_1fr] gap-1">
             <MailboxNav currentFolder={currentFolder} onSelectFolder={handleSelectFolder} onSend={handleSendEmail} />
             <EmailList emails={filteredEmails} onSelectEmail={handleSelectEmail} selectedEmailId={selectedEmail?.id ?? null} />
             <EmailView email={selectedEmail} />
