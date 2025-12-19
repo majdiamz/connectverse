@@ -269,13 +269,26 @@ let emails: Email[] = [
 ];
 
 export const getCustomers = () => {
-  return customers;
+  return [...customers];
 }
+
+export const addCustomer = (customer: Omit<Customer, 'id' | 'joined' | 'tags' | 'dealName' | 'dealHistory' | 'avatarUrl'> & { id?: string }) => {
+    const newCustomer: Customer = {
+        id: `cust_${Date.now()}`,
+        ...customer,
+        joined: new Date().toISOString().split('T')[0],
+        tags: [],
+        dealName: 'New Deal',
+        dealHistory: [],
+        avatarUrl: `https://picsum.photos/seed/${Date.now()}/100/100`,
+    };
+    customers.unshift(newCustomer);
+};
 
 export const updateCustomer = (updatedCustomer: Customer) => {
     const index = customers.findIndex(c => c.id === updatedCustomer.id);
     if (index !== -1) {
-        customers[index] = updatedCustomer;
+        customers[index] = { ...customers[index], ...updatedCustomer };
     }
 };
 
@@ -370,3 +383,5 @@ export const getConversationData = () => {
 export const getPlatformStats = () => {
     return platformStats;
 }
+
+    

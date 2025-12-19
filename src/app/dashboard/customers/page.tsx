@@ -1,6 +1,6 @@
 
 'use client';
-import { getCustomers, Customer, getConversations, Conversation } from "@/lib/data";
+import { getCustomers, Customer, getConversations, Conversation, addCustomer, updateCustomer } from "@/lib/data";
 import {
   Table,
   TableHeader,
@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, SlidersHorizontal, Calendar as CalendarIcon, FilterX, MessageSquare, History, ExternalLink, Download } from "lucide-react";
+import { Search, SlidersHorizontal, Calendar as CalendarIcon, FilterX, MessageSquare, History, ExternalLink, Download, PlusCircle, Edit } from "lucide-react";
 import { ChannelIcon } from "@/components/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,12 +23,28 @@ import { useState, useMemo } from "react";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
+
+const customerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters."),
+  email: z.string().email("Invalid email address."),
+  phone: z.string().optional(),
+  channel: z.enum(["whatsapp", "messenger", "instagram", "tiktok"]),
+  status: z.enum(['new', 'contacted', 'qualified', 'unqualified', 'demo', 'won']),
+});
+
+type CustomerFormData = z.infer<typeof customerSchema>;
 
 const statusColors: { [key in Customer['status']]: string } = {
   new: 'bg-blue-500',
@@ -47,21 +63,166 @@ const dealStatusColors: { [key: string]: string } = {
 
 const ITEMS_PER_PAGE = 10;
 
+function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Customer> | null, onSave: (data: Customer) => void, onOpenChange: (open: boolean) => void }) {
+  const { toast } = useToast();
+  const form = useForm<CustomerFormData>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: customer?.name || '',
+      email: customer?.email || '',
+      phone: customer?.phone || '',
+      channel: customer?.channel || 'whatsapp',
+      status: customer?.status || 'new',
+    },
+  });
+
+  const onSubmit = (data: CustomerFormData) => {
+    const newCustomerData: Customer = {
+      ...customer,
+      id: customer?.id || `cust_${Date.now()}`,
+      ...data,
+      avatarUrl: customer?.avatarUrl || `https://picsum.photos/seed/${Math.random()}/100/100`,
+      joined: customer?.joined || new Date().toISOString().split('T')[0],
+      tags: customer?.tags || [],
+      dealName: customer?.dealName || '',
+      dealHistory: customer?.dealHistory || [],
+    };
+    onSave(newCustomerData);
+    toast({
+      title: `Customer ${customer?.id ? 'updated' : 'created'}`,
+      description: `${data.name} has been successfully ${customer?.id ? 'updated' : 'saved'}.`,
+    });
+    onOpenChange(false);
+  };
+  
+  return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <DialogHeader>
+                <DialogTitle>{customer?.id ? 'Edit Customer' : 'Add New Customer'}</DialogTitle>
+                <DialogDescription>
+                    {customer?.id ? 'Update the details for this customer.' : 'Fill out the form to add a new customer.'}
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g. John Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g. john.doe@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Phone</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g. +1-555-1234" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="channel"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Channel</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a channel" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="whatsapp">Whatsapp</SelectItem>
+                                        <SelectItem value="messenger">Messenger</SelectItem>
+                                        <SelectItem value="instagram">Instagram</SelectItem>
+                                        <SelectItem value="tiktok">TikTok</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Status</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a status" />
+                                    </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="new">New</SelectItem>
+                                        <SelectItem value="contacted">Contacted</SelectItem>
+                                        <SelectItem value="qualified">Qualified</SelectItem>
+                                        <SelectItem value="unqualified">Unqualified</SelectItem>
+                                        <SelectItem value="demo">Demo</SelectItem>
+                                        <SelectItem value="won">Won</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button type="button" variant="secondary">Cancel</Button>
+                </DialogClose>
+                <Button type="submit">Save Customer</Button>
+            </DialogFooter>
+        </form>
+      </Form>
+  );
+}
+
 
 export default function CustomersPage() {
-  const customers = getCustomers();
+  const [allCustomers, setAllCustomers] = useState(getCustomers());
   const conversations = getConversations();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [customerToEdit, setCustomerToEdit] = useState<Partial<Customer> | null>(null);
 
-  const totalPages = Math.ceil(customers.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(allCustomers.length / ITEMS_PER_PAGE);
 
   const paginatedCustomers = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
-    return customers.slice(startIndex, endIndex);
-  }, [customers, currentPage]);
+    return allCustomers.slice(startIndex, endIndex);
+  }, [allCustomers, currentPage]);
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -91,8 +252,27 @@ export default function CustomersPage() {
     }
   };
 
+  const handleSaveCustomer = (customerData: Customer) => {
+    if (customerData.id && allCustomers.some(c => c.id === customerData.id)) {
+        updateCustomer(customerData);
+    } else {
+        addCustomer(customerData);
+    }
+    setAllCustomers(getCustomers());
+  };
+
+  const openAddForm = () => {
+    setCustomerToEdit(null);
+    setIsFormOpen(true);
+  };
+  
+  const openEditForm = (customer: Customer) => {
+    setCustomerToEdit(customer);
+    setIsFormOpen(true);
+  };
+
   const exportToCsv = () => {
-    const customersToExport = customers.filter(c => selectedCustomers.includes(c.id));
+    const customersToExport = allCustomers.filter(c => selectedCustomers.includes(c.id));
     if (customersToExport.length === 0) return;
 
     const headers = ['ID', 'Name', 'Email', 'Phone', 'Joined', 'Channel', 'Status', 'Tags'];
@@ -123,6 +303,11 @@ export default function CustomersPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent>
+            {isFormOpen && <CustomerForm customer={customerToEdit} onSave={handleSaveCustomer} onOpenChange={setIsFormOpen} />}
+        </DialogContent>
+      </Dialog>
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -185,7 +370,10 @@ export default function CustomersPage() {
                           Export ({selectedCustomers.length})
                       </Button>
                   ) : (
-                    <Button>Add Customer</Button>
+                    <Button onClick={openAddForm}>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Customer
+                    </Button>
                   )}
               </div>
           </div>
@@ -207,6 +395,7 @@ export default function CustomersPage() {
                     <TableHead className="hidden md:table-cell">Status</TableHead>
                     <TableHead className="hidden lg:table-cell">Joined</TableHead>
                     <TableHead>Tags</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -252,6 +441,11 @@ export default function CustomersPage() {
                                 </Badge>
                             ))}
                             </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            <Button variant="ghost" size="icon" onClick={() => openEditForm(customer)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
                         </TableCell>
                     </TableRow>
                 ))}
