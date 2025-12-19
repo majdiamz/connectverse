@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
@@ -354,7 +353,7 @@ const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDe
 };
 
 
-const CustomerProfile = ({ customer, onStatusChange, onDealCreate, children }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, onDealCreate: (customerId: string, deal: Deal) => void, children: React.ReactNode }) => {
+const CustomerProfile = ({ customer, onStatusChange, onDealCreate }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, onDealCreate: (customerId: string, deal: Deal) => void }) => {
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);
@@ -368,7 +367,6 @@ const CustomerProfile = ({ customer, onStatusChange, onDealCreate, children }: {
 
     return (
       <div className="hidden lg:flex lg:flex-col h-full gap-2">
-        {children}
         <Card className="flex-1">
           {customer ? (
             <>
@@ -596,97 +594,88 @@ function InboxPageContent() {
   };
 
   const filtersWidget = (
-    <Accordion type="single" collapsible>
-        <AccordionItem value="filters" className="border-b-0">
-            <Card>
-                <CardHeader className='p-4 border-b flex-row items-center justify-between'>
-                      <AccordionTrigger className="p-0 hover:no-underline flex-1">
-                        <CardTitle className="text-lg">Filters</CardTitle>
-                    </AccordionTrigger>
-                    <Button variant="ghost" size="sm" onClick={resetFilters} className="ml-auto">
-                        <FilterX className="h-4 w-4 mr-2" />
-                        Reset
-                    </Button>
-                </CardHeader>
-                <AccordionContent>
-                    <CardContent className="p-4 pt-4">
-                      <div className="space-y-4">
-                          <div className="relative">
-                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                              <Input placeholder="Search by name or email..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <Select value={channelFilter} onValueChange={setChannelFilter}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Channel" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="whatsapp">Whatsapp</SelectItem>
-                                    <SelectItem value="messenger">Messenger</SelectItem>
-                                    <SelectItem value="instagram">Instagram</SelectItem>
-                                    <SelectItem value="tiktok">TikTok</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="read">Read</SelectItem>
-                                    <SelectItem value="unread">Unread</SelectItem>
-                                </SelectContent>
-                            </Select>
-                          </div>
-                          <DateRangePicker date={dateFilter} onSelect={setDateFilter} />
-                      </div>
-                    </CardContent>
-                </AccordionContent>
-            </Card>
-        </AccordionItem>
-    </Accordion>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Filters</CardTitle>
+          <Button variant="ghost" size="sm" onClick={resetFilters}>
+              <FilterX className="h-4 w-4 mr-2" />
+              Reset
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search by name or email..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
+            <Select value={channelFilter} onValueChange={setChannelFilter}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Channel" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="whatsapp">Whatsapp</SelectItem>
+                    <SelectItem value="messenger">Messenger</SelectItem>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="tiktok">TikTok</SelectItem>
+                </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="read">Read</SelectItem>
+                    <SelectItem value="unread">Unread</SelectItem>
+                </SelectContent>
+            </Select>
+            <DateRangePicker date={dateFilter} onSelect={setDateFilter} />
+        </div>
+      </CardContent>
+  </Card>
   );
 
 
   return (
-    <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-1">
-      <div className="flex flex-col gap-2">
-        <div className="flex-1 flex flex-col min-h-0">
-          <ConversationList 
-            conversations={paginatedConversations}
-            onSelectConversation={handleSelectConversation} 
-            selectedConversationId={getSelectedConversation()?.id ?? null} 
-          />
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePreviousPage}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {currentPage} of {totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
-      </div>
-      <MessageView conversation={getSelectedConversation()} />
-      <CustomerProfile 
-        customer={getSelectedConversation()?.customer ?? null} 
-        onStatusChange={handleStatusChange}
-        onDealCreate={handleDealCreate}
-      >
+    <div className="flex flex-col h-full gap-4">
         {filtersWidget}
-      </CustomerProfile>
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-1 min-h-0">
+            <div className="flex flex-col gap-2 min-h-0">
+                <ConversationList 
+                    conversations={paginatedConversations}
+                    onSelectConversation={handleSelectConversation} 
+                    selectedConversationId={getSelectedConversation()?.id ?? null} 
+                />
+                <div className="flex items-center justify-end space-x-2 py-4 flex-shrink-0">
+                    <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                    >
+                    Previous
+                    </Button>
+                    <span className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    >
+                    Next
+                    </Button>
+                </div>
+            </div>
+            <MessageView conversation={getSelectedConversation()} />
+            <CustomerProfile 
+                customer={getSelectedConversation()?.customer ?? null} 
+                onStatusChange={handleStatusChange}
+                onDealCreate={handleDealCreate}
+            />
+        </div>
     </div>
   );
 }
@@ -698,3 +687,5 @@ export default function InboxPage() {
     </Suspense>
   )
 }
+
+    
