@@ -107,7 +107,7 @@ const ConversationList = ({
             <div className="p-2">
                 {conversations.map((conv) => {
                   const lastMessage = conv.messages[conv.messages.length - 1];
-                  const snippet = lastMessage.text.length > 50 ? `${lastMessage.text.substring(0, 50)}...` : lastMessage.text;
+                  const snippet = lastMessage.text.length > 30 ? `${lastMessage.text.substring(0, 30)}...` : lastMessage.text;
 
                   return (
                     <button
