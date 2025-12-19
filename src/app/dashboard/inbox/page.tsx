@@ -28,6 +28,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Textarea } from '@/components/ui/textarea';
 
 const conversationsData = getConversations();
 
@@ -104,38 +105,43 @@ const ConversationList = ({
         <Card className="flex flex-col h-full">
             <ScrollArea className="flex-1">
             <div className="p-2">
-                {conversations.map((conv) => (
-                <button
-                    key={conv.id}
-                    className={cn(
-                        "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
-                        selectedConversationId === conv.id && "bg-accent"
-                    )}
-                    onClick={() => onSelectConversation(conv)}
-                >
-                    <div className="relative">
-                    <Avatar className="h-10 w-10 border">
-                        <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
-                        <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
-                        <ChannelIcon channel={conv.channel} className="h-3 w-3" />
-                    </div>
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                    <div className="flex items-center justify-between">
-                        <p className="font-semibold truncate">{conv.customer.name}</p>
-                        <p className="text-xs text-muted-foreground">{formatTimestamp(conv.messages[conv.messages.length - 1].timestamp)}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground truncate">{conv.messages[conv.messages.length - 1].text}</p>
-                    </div>
-                    {conv.unreadCount > 0 && (
-                    <div className="flex h-full items-center">
-                        <Badge className="h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
-                    </div>
-                    )}
-                </button>
-                ))}
+                {conversations.map((conv) => {
+                  const lastMessage = conv.messages[conv.messages.length - 1];
+                  const snippet = lastMessage.text.length > 50 ? `${lastMessage.text.substring(0, 50)}...` : lastMessage.text;
+
+                  return (
+                    <button
+                        key={conv.id}
+                        className={cn(
+                            "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
+                            selectedConversationId === conv.id && "bg-accent"
+                        )}
+                        onClick={() => onSelectConversation(conv)}
+                    >
+                        <div className="relative">
+                        <Avatar className="h-10 w-10 border">
+                            <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
+                            <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
+                            <ChannelIcon channel={conv.channel} className="h-3 w-3" />
+                        </div>
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                        <div className="flex items-center justify-between">
+                            <p className="font-semibold truncate">{conv.customer.name}</p>
+                            <p className="text-xs text-muted-foreground">{formatTimestamp(lastMessage.timestamp)}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">{snippet}</p>
+                        </div>
+                        {conv.unreadCount > 0 && (
+                        <div className="flex h-full items-center">
+                            <Badge className="h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
+                        </div>
+                        )}
+                    </button>
+                  )
+                })}
             </div>
             </ScrollArea>
         </Card>
