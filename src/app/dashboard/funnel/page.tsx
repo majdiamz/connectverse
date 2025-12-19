@@ -277,7 +277,17 @@ export default function FunnelPage() {
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               <CardTitle>Filters</CardTitle>
+              <div className="flex items-center justify-start gap-2">
+                <Button variant={view === 'kanban' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('kanban')}>
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')}>
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 min-w-[200px] md:max-w-3xl">
                   <Select value={channelFilter} onValueChange={(value) => setChannelFilter(value as Channel | '')}>
                       <SelectTrigger>
@@ -304,15 +314,6 @@ export default function FunnelPage() {
           </div>
         </CardHeader>
       </Card>
-
-       <div className="flex items-center justify-start gap-2">
-        <Button variant={view === 'kanban' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('kanban')}>
-          <LayoutGrid className="h-4 w-4" />
-        </Button>
-        <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setView('list')}>
-          <List className="h-4 w-4" />
-        </Button>
-      </div>
 
       {view === 'kanban' ? (
         <div className="flex-1 -mx-4 -my-2 p-0">
