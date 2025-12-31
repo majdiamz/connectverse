@@ -586,5 +586,3 @@ function DateRangePicker({ className }: React.HTMLAttributes<HTMLDivElement>) {
     </div>
   )
 }
-
-    
