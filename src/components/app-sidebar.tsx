@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarHeader,
@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { currentUser } from '@/lib/data';
 import { Separator } from './ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -41,6 +42,26 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        toast({
+            title: 'Logged Out',
+            description: 'You have been successfully logged out.',
+        });
+        router.push('/login');
+        router.refresh();
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Logout Failed',
+            description: 'An error occurred during logout. Please try again.',
+        });
+    }
+  };
 
   return (
     <Sidebar>
@@ -104,7 +125,7 @@ export function AppSidebar() {
               <span className="font-semibold">{currentUser.name}</span>
               <span className="text-xs text-muted-foreground">alex.green@example.com</span>
             </div>
-            <LogOut className="ml-auto h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground" />
+            <LogOut onClick={handleLogout} className="ml-auto h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground" />
           </div>
       </SidebarFooter>
     </Sidebar>

@@ -2,6 +2,7 @@
 'use client';
 
 import * as React from 'react';
+import { useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,13 +15,34 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { currentUser } from "@/lib/data";
 import { LogOut, Settings, User } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
 export function UserAvatar() {
     const [isMounted, setIsMounted] = React.useState(false);
+    const router = useRouter();
+    const { toast } = useToast();
 
     React.useEffect(() => {
         setIsMounted(true);
     }, []);
+    
+    const handleLogout = async () => {
+        try {
+            await fetch('/api/auth/logout', { method: 'POST' });
+            toast({
+                title: 'Logged Out',
+                description: 'You have been successfully logged out.',
+            });
+            router.push('/login');
+            router.refresh();
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Logout Failed',
+                description: 'An error occurred during logout. Please try again.',
+            });
+        }
+    };
 
     if (!isMounted) {
         return (
@@ -59,7 +81,7 @@ export function UserAvatar() {
                 <span>Settings</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
             </DropdownMenuItem>
