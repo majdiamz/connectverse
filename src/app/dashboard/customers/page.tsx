@@ -1,6 +1,6 @@
 
 'use client';
-import { getCustomers, Customer, getConversations, Conversation, addCustomer, updateCustomer } from "@/lib/data";
+import { getCustomers, Customer, addCustomer, updateCustomer, Conversation, getConversation } from "@/lib/data";
 import {
   Table,
   TableHeader,
@@ -19,7 +19,7 @@ import { ChannelIcon } from "@/components/icons";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -61,9 +61,7 @@ const dealStatusColors: { [key: string]: string } = {
   'In Progress': 'bg-yellow-500',
 };
 
-const ITEMS_PER_PAGE = 10;
-
-function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Customer> | null, onSave: (data: Customer) => void, onOpenChange: (open: boolean) => void }) {
+function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Customer> | null, onSave: (data: CustomerFormData, id?: string) => void, onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -75,19 +73,19 @@ function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Cu
       status: customer?.status || 'new',
     },
   });
+  
+  useEffect(() => {
+    form.reset({
+      name: customer?.name || '',
+      email: customer?.email || '',
+      phone: customer?.phone || '',
+      channel: customer?.channel || 'whatsapp',
+      status: customer?.status || 'new',
+    });
+  }, [customer, form]);
 
   const onSubmit = (data: CustomerFormData) => {
-    const newCustomerData: Customer = {
-      ...customer,
-      id: customer?.id || `cust_${Date.now()}`,
-      ...data,
-      avatarUrl: customer?.avatarUrl || `https://picsum.photos/seed/${Math.random()}/100/100`,
-      joined: customer?.joined || new Date().toISOString().split('T')[0],
-      tags: customer?.tags || [],
-      dealName: customer?.dealName || '',
-      dealHistory: customer?.dealHistory || [],
-    };
-    onSave(newCustomerData);
+    onSave(data, customer?.id);
     toast({
       title: `Customer ${customer?.id ? 'updated' : 'created'}`,
       description: `${data.name} has been successfully ${customer?.id ? 'updated' : 'saved'}.`,
@@ -208,21 +206,33 @@ function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Cu
 
 
 export default function CustomersPage() {
-  const [allCustomers, setAllCustomers] = useState(getCustomers());
-  const conversations = getConversations();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<Partial<Customer> | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const totalPages = Math.ceil(allCustomers.length / ITEMS_PER_PAGE);
+  const fetchCustomers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ page: String(currentPage), limit: String(10) });
+      const data = await getCustomers(params);
+      setCustomers(data.customers);
+      setTotalPages(data.totalPages);
+    } catch (error) {
+      console.error("Failed to fetch customers:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [currentPage]);
 
-  const paginatedCustomers = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return allCustomers.slice(startIndex, endIndex);
-  }, [allCustomers, currentPage]);
+  useEffect(() => {
+    fetchCustomers();
+  }, [fetchCustomers]);
 
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -233,12 +243,14 @@ export default function CustomersPage() {
   };
 
   const getConversationForCustomer = (customerId: string) => {
-    return conversations.find(c => c.customer.id === customerId);
+    // This part might need adjustment depending on how conversations are fetched.
+    // For now, it assumes conversations are not pre-loaded.
+    return null;
   }
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
     if (checked === true) {
-      setSelectedCustomers(paginatedCustomers.map(c => c.id));
+      setSelectedCustomers(customers.map(c => c.id));
     } else {
       setSelectedCustomers([]);
     }
@@ -252,13 +264,17 @@ export default function CustomersPage() {
     }
   };
 
-  const handleSaveCustomer = (customerData: Customer) => {
-    if (customerData.id && allCustomers.some(c => c.id === customerData.id)) {
-        updateCustomer(customerData);
-    } else {
-        addCustomer(customerData);
+  const handleSaveCustomer = async (data: CustomerFormData, id?: string) => {
+    try {
+        if (id) {
+            await updateCustomer(id, data);
+        } else {
+            await addCustomer(data);
+        }
+        fetchCustomers(); // Refetch customers after saving
+    } catch (error) {
+        console.error("Failed to save customer:", error);
     }
-    setAllCustomers(getCustomers());
   };
 
   const openAddForm = () => {
@@ -272,7 +288,7 @@ export default function CustomersPage() {
   };
 
   const exportToCsv = () => {
-    const customersToExport = allCustomers.filter(c => selectedCustomers.includes(c.id));
+    const customersToExport = customers.filter(c => selectedCustomers.includes(c.id));
     if (customersToExport.length === 0) return;
 
     const headers = ['ID', 'Name', 'Email', 'Phone', 'Joined', 'Channel', 'Status', 'Tags'];
@@ -300,6 +316,8 @@ export default function CustomersPage() {
     link.click();
     document.body.removeChild(link);
   };
+  
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="flex flex-col gap-4">
@@ -385,7 +403,7 @@ export default function CustomersPage() {
                 <TableRow>
                     <TableHead className="w-[40px]">
                       <Checkbox
-                        checked={selectedCustomers.length > 0 && selectedCustomers.length === paginatedCustomers.length}
+                        checked={selectedCustomers.length > 0 && selectedCustomers.length === customers.length}
                         onCheckedChange={handleSelectAll}
                       />
                     </TableHead>
@@ -399,7 +417,7 @@ export default function CustomersPage() {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {paginatedCustomers.map((customer) => (
+                {customers.map((customer) => (
                     <TableRow 
                         key={customer.id} 
                         data-state={selectedCustomers.includes(customer.id) && "selected"}

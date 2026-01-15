@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import type { Customer, Conversation, Channel } from '@/lib/data';
-import { getCustomers, getConversations, updateCustomerStatus } from '@/lib/data';
+import { getCustomers, updateCustomerStatus } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -234,13 +233,30 @@ const ListView = ({ customers }: { customers: Customer[] }) => {
 
 
 export default function FunnelPage() {
-  const [allCustomers, setAllCustomers] = useState<Customer[]>(getCustomers());
-  const [conversations] = useState<Conversation[]>(getConversations());
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   
   const [channelFilter, setChannelFilter] = useState<Channel | ''>('');
   const [tagFilter, setTagFilter] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
+
+  const fetchAllCustomers = async () => {
+    setLoading(true);
+    try {
+        // Assuming getCustomers can fetch all customers without pagination if no params are given
+        const data = await getCustomers();
+        setAllCustomers(data.customers);
+    } catch (error) {
+        console.error("Failed to fetch customers:", error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllCustomers();
+  }, []);
 
   const filteredCustomers = useMemo(() => {
     return allCustomers.filter(customer => {
@@ -256,9 +272,13 @@ export default function FunnelPage() {
   }, [allCustomers, channelFilter, tagFilter, dateRange]);
 
 
-  const handleDrop = (customerId: string, newStatus: Customer['status']) => {
-    updateCustomerStatus(customerId, newStatus);
-    setAllCustomers(getCustomers());
+  const handleDrop = async (customerId: string, newStatus: Customer['status']) => {
+    try {
+        await updateCustomerStatus(customerId, newStatus);
+        fetchAllCustomers(); // Refetch all customers to update the view
+    } catch (error) {
+        console.error("Failed to update customer status:", error);
+    }
   };
   
   const resetFilters = () => {
@@ -267,10 +287,12 @@ export default function FunnelPage() {
     setDateRange(undefined);
   };
 
-  const customersByStatus = columns.reduce((acc, status) => {
+  const customersByStatus = useMemo(() => columns.reduce((acc, status) => {
     acc[status] = filteredCustomers.filter(c => c.status === status);
     return acc;
-  }, {} as { [key in Customer['status']]: Customer[] });
+  }, {} as { [key in Customer['status']]: Customer[] }), [filteredCustomers]);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="h-full flex flex-col gap-4">
@@ -324,7 +346,7 @@ export default function FunnelPage() {
                         key={status}
                         status={status}
                         customers={customersByStatus[status]}
-                        conversations={conversations}
+                        conversations={[]} // Conversations are not directly used in this view
                         onDrop={handleDrop}
                       />
                   ))}

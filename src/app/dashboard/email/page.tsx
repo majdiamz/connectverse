@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getEmails, addEmail, updateEmail, currentUser, type Email } from '@/lib/data';
+import { getEmails, sendEmail, updateEmail, currentUser, type Email, type NewEmail } from '@/lib/data';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -139,14 +139,14 @@ const EmailView = ({ email }: { email: Email | null }) => {
     );
 };
 
-const ComposeEmailDialog = ({ onSend }: { onSend: (newEmail: Omit<Email, 'id' | 'timestamp' | 'folder' | 'from' | 'isRead'>) => void }) => {
+const ComposeEmailDialog = ({ onSend }: { onSend: (newEmail: NewEmail) => void }) => {
     const [to, setTo] = useState('');
     const [subject, setSubject] = useState('');
     const [body, setBody] = useState('');
     const [open, setOpen] = useState(false);
 
     const handleSend = () => {
-        onSend({ subject, body });
+        onSend({ to, subject, body });
         setOpen(false);
         setTo('');
         setSubject('');
@@ -200,7 +200,7 @@ const MailboxNav = ({
 }: { 
     currentFolder: string, 
     onSelectFolder: (folder: Email['folder']) => void,
-    onSend: (email: Omit<Email, 'id' | 'timestamp' | 'folder' | 'from' | 'isRead'>) => void 
+    onSend: (email: NewEmail) => void 
 }) => {
     const folders = [
         { name: 'inbox', icon: Inbox },
@@ -251,78 +251,92 @@ const MailboxNav = ({
 function EmailPageContent() {
     const { toast } = useToast();
     const searchParams = useSearchParams();
-    const [allEmails, setAllEmails] = useState(getEmails());
+    const [emails, setEmails] = useState<Email[]>([]);
     const [currentFolder, setCurrentFolder] = useState<Email['folder']>('inbox');
+    const [loading, setLoading] = useState(true);
     
-    const selectedEmailId = searchParams.get('emailId');
+    const [selectedEmailId, setSelectedEmailId] = useState(searchParams.get('emailId'));
 
-    const handleSelectEmail = (id: string) => {
-        const email = allEmails.find(e => e.id === id);
+    useEffect(() => {
+        setSelectedEmailId(searchParams.get('emailId'));
+    }, [searchParams]);
+
+    const fetchEmails = async (folder: Email['folder']) => {
+        setLoading(true);
+        try {
+            const fetchedEmails = await getEmails(folder);
+            setEmails(fetchedEmails.sort((a, b) => parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime()));
+        } catch (error) {
+            console.error("Failed to fetch emails", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not fetch emails." });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEmails(currentFolder);
+    }, [currentFolder]);
+
+    const handleSelectEmail = async (id: string) => {
+        const email = emails.find(e => e.id === id);
         if(email && !email.isRead) {
-            updateEmail(id, { isRead: true });
-            setAllEmails(getEmails());
+            try {
+                await updateEmail(id, { isRead: true });
+                fetchEmails(currentFolder); // Refetch to update read status
+            } catch (error) {
+                console.error("Failed to mark email as read", error);
+            }
         }
 
         const url = new URL(window.location.href);
         url.searchParams.set('emailId', id);
         window.history.pushState({ path: url.href }, '', url.href);
+        setSelectedEmailId(id);
     };
 
     const handleSelectFolder = (folder: Email['folder']) => {
         setCurrentFolder(folder);
-        // Deselect email when changing folder
+        setSelectedEmailId(null);
         const url = new URL(window.location.href);
         url.searchParams.delete('emailId');
         window.history.pushState({ path: url.href }, '', url.href);
     };
 
-    const handleSendEmail = (newEmailData: Omit<Email, 'id' | 'timestamp' | 'folder' | 'from' | 'isRead'>) => {
-        const newEmail: Email = {
-            id: `email_${Date.now()}`,
-            from: { name: currentUser.name, email: 'alex.green@example.com', avatar: currentUser.avatarUrl },
-            timestamp: new Date().toISOString(),
-            isRead: true,
-            folder: 'sent',
-            ...newEmailData
-        };
-        addEmail(newEmail);
-        setAllEmails(getEmails());
-        toast({
-            title: "Email Sent!",
-            description: `Your email to ${newEmailData.subject} has been sent.`,
-        });
-        setCurrentFolder('sent');
+    const handleSendEmail = async (newEmailData: NewEmail) => {
+        try {
+            await sendEmail(newEmailData);
+            toast({
+                title: "Email Sent!",
+                description: `Your email to ${newEmailData.to} has been sent.`,
+            });
+            handleSelectFolder('sent');
+        } catch (error) {
+            console.error("Failed to send email", error);
+            toast({ variant: "destructive", title: "Error", description: "Could not send email." });
+        }
     };
-
-    const filteredEmails = useMemo(() => {
-        return allEmails.filter(email => email.folder === currentFolder).sort((a, b) => parseISO(b.timestamp).getTime() - parseISO(a.timestamp).getTime());
-    }, [allEmails, currentFolder]);
     
     const selectedEmail = useMemo(() => {
-        if (!selectedEmailId) return filteredEmails.length > 0 ? filteredEmails[0] : null;
-        return allEmails.find(e => e.id === selectedEmailId) ?? null;
-    }, [allEmails, selectedEmailId, filteredEmails]);
+        if (!selectedEmailId) return emails.length > 0 ? emails[0] : null;
+        return emails.find(e => e.id === selectedEmailId) ?? null;
+    }, [emails, selectedEmailId]);
     
     // Auto-select first email in folder if none is selected
     useEffect(() => {
-        if (!selectedEmailId && filteredEmails.length > 0) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('emailId', filteredEmails[0].id);
-            window.history.replaceState({ path: url.href }, '', url.href);
-            
-            // Mark as read
-            if (!filteredEmails[0].isRead) {
-                 updateEmail(filteredEmails[0].id, { isRead: true });
-                 setAllEmails(getEmails());
-            }
+        if (!selectedEmailId && emails.length > 0) {
+            const firstEmail = emails[0];
+            handleSelectEmail(firstEmail.id);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedEmailId, filteredEmails]);
+    }, [selectedEmailId, emails]);
+
+    if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[250px_300px_1fr] lg:grid-cols-[250px_350px_1fr] gap-1">
+        <div className="h-[calc(100vh-8rem)] grid grid-cols-1 md:grid-cols-[250px_300px_1fr] lg:grid-cols-[250px_450px_1fr] gap-1">
             <MailboxNav currentFolder={currentFolder} onSelectFolder={handleSelectFolder} onSend={handleSendEmail} />
-            <EmailList emails={filteredEmails} onSelectEmail={handleSelectEmail} selectedEmailId={selectedEmail?.id ?? null} />
+            <EmailList emails={emails} onSelectEmail={handleSelectEmail} selectedEmailId={selectedEmail?.id ?? null} />
             <EmailView email={selectedEmail} />
         </div>
     );
@@ -330,8 +344,8 @@ function EmailPageContent() {
 
 export default function EmailPage() {
     return (
-        // Using a key on Suspense to force re-render on search param change
-        // This is a simple way to manage state based on URL
-        <EmailPageContent key={useSearchParams().toString()} />
+        <Suspense fallback={<div>Loading...</div>}>
+            <EmailPageContent />
+        </Suspense>
     )
 }

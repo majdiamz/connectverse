@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
+import { useState, useEffect, Suspense, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { Conversation, Message, Customer, CustomerStatus, Deal } from '@/lib/data';
-import { getConversations, currentUser, updateConversationUnreadCount, updateCustomerStatus, addDealToCustomer } from '@/lib/data';
+import { getConversations, currentUser, markConversationAsRead, updateCustomerStatus, addDealToCustomer, sendMessage } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -20,19 +20,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange } from "react-day-picker";
 import { format, isToday, isYesterday } from "date-fns";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Textarea } from '@/components/ui/textarea';
-
-const conversationsData = getConversations();
 
 const MESSAGES_PER_PAGE = 8;
-const CONVERSATIONS_PER_PAGE = 10;
 
 const statusColors: { [key in Customer['status']]: string } = {
   new: 'bg-blue-500',
@@ -56,11 +51,19 @@ type DealFormData = z.infer<typeof dealFormSchema>;
 const ConversationList = ({ 
     conversations,
     onSelectConversation, 
-    selectedConversationId 
+    selectedConversationId,
+    onNextPage,
+    onPrevPage,
+    currentPage,
+    totalPages
 }: { 
     conversations: Conversation[],
     onSelectConversation: (conv: Conversation) => void; 
-    selectedConversationId: string | null 
+    selectedConversationId: string | null;
+    onNextPage: () => void;
+    onPrevPage: () => void;
+    currentPage: number;
+    totalPages: number;
 }) => {
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
@@ -101,57 +104,81 @@ const ConversationList = ({
     }
 
     return (
-        <Card className="flex flex-col h-full">
-            <ScrollArea className="flex-1">
-            <div className="p-2">
-                {conversations.map((conv) => {
-                  const lastMessage = conv.messages[conv.messages.length - 1];
-                  const snippet = lastMessage.text.length > 30 ? `${lastMessage.text.substring(0, 30)}...` : lastMessage.text;
+        <div className="flex flex-col gap-2 min-h-0">
+            <Card className="flex flex-col h-full">
+                <ScrollArea className="flex-1">
+                <div className="p-2">
+                    {conversations.map((conv) => {
+                      const lastMessage = conv.messages[conv.messages.length - 1];
+                      const snippet = lastMessage.text.length > 30 ? `${lastMessage.text.substring(0, 30)}...` : lastMessage.text;
 
-                  return (
-                    <button
-                        key={conv.id}
-                        className={cn(
-                            "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
-                            selectedConversationId === conv.id && "bg-accent"
-                        )}
-                        onClick={() => onSelectConversation(conv)}
-                    >
-                        <div className="relative">
-                        <Avatar className="h-10 w-10 border">
-                            <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
-                            <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
-                            <ChannelIcon channel={conv.channel} className="h-3 w-3" />
-                        </div>
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                        <div className="flex items-center justify-between">
-                            <p className="font-semibold truncate">{conv.customer.name}</p>
-                            <p className="text-xs text-muted-foreground">{formatTimestamp(lastMessage.timestamp)}</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground truncate">{snippet}</p>
-                        </div>
-                        {conv.unreadCount > 0 && (
-                        <div className="flex h-full items-center">
-                            <Badge className="h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
-                        </div>
-                        )}
-                    </button>
-                  )
-                })}
+                      return (
+                        <button
+                            key={conv.id}
+                            className={cn(
+                                "flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-accent",
+                                selectedConversationId === conv.id && "bg-accent"
+                            )}
+                            onClick={() => onSelectConversation(conv)}
+                        >
+                            <div className="relative">
+                            <Avatar className="h-10 w-10 border">
+                                <AvatarImage src={conv.customer.avatarUrl} alt={conv.customer.name} />
+                                <AvatarFallback>{conv.customer.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background">
+                                <ChannelIcon channel={conv.channel} className="h-3 w-3" />
+                            </div>
+                            </div>
+                            <div className="flex-1 overflow-hidden">
+                            <div className="flex items-center justify-between">
+                                <p className="font-semibold truncate">{conv.customer.name}</p>
+                                <p className="text-xs text-muted-foreground">{formatTimestamp(lastMessage.timestamp)}</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate">{snippet}</p>
+                            </div>
+                            {conv.unreadCount > 0 && (
+                            <div className="flex h-full items-center">
+                                <Badge className="h-5 w-5 flex items-center justify-center p-0 bg-primary text-primary-foreground">{conv.unreadCount}</Badge>
+                            </div>
+                            )}
+                        </button>
+                      )
+                    })}
+                </div>
+                </ScrollArea>
+            </Card>
+             <div className="flex items-center justify-end space-x-2 py-4 flex-shrink-0">
+                <Button
+                variant="outline"
+                size="sm"
+                onClick={onPrevPage}
+                disabled={currentPage === 1}
+                >
+                Previous
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+                </span>
+                <Button
+                variant="outline"
+                size="sm"
+                onClick={onNextPage}
+                disabled={currentPage === totalPages}
+                >
+                Next
+                </Button>
             </div>
-            </ScrollArea>
-        </Card>
+        </div>
     )
 };
 
-const MessageView = ({ conversation }: { conversation: Conversation | null }) => {
+const MessageView = ({ conversation, onSendMessage }: { conversation: Conversation | null, onSendMessage: (text: string) => void }) => {
   const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [newMessage, setNewMessage] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
@@ -185,6 +212,12 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
     }
   }, [visibleMessagesCount]);
   
+  const handleSendMessage = () => {
+      if (newMessage.trim()) {
+          onSendMessage(newMessage.trim());
+          setNewMessage("");
+      }
+  }
 
   const messages = conversation?.messages || [];
   const displayedMessages = messages.slice(Math.max(0, messages.length - visibleMessagesCount));
@@ -256,12 +289,12 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
           </ScrollArea>
           <div className="border-t p-4">
             <div className="relative">
-              <Input placeholder="Type a message..." className="pr-20" />
+              <Input placeholder="Type a message..." className="pr-20" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} />
               <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-7 w-7">
                   <Paperclip className="h-4 w-4" />
                 </Button>
-                <Button size="icon" className="h-8 w-8">
+                <Button size="icon" className="h-8 w-8" onClick={handleSendMessage}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
@@ -279,7 +312,7 @@ const MessageView = ({ conversation }: { conversation: Conversation | null }) =>
   );
 }
 
-const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDealCreate: (deal: Deal) => void }) => {
+const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDealCreate: (deal: Omit<Deal, 'id'|'status'|'closeDate'>) => void }) => {
     const { toast } = useToast();
     const [open, setOpen] = useState(false);
     const { register, handleSubmit, reset, formState: { errors } } = useForm<DealFormData>({
@@ -288,14 +321,7 @@ const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDe
     });
 
     const onSubmit = (data: DealFormData) => {
-        const newDeal: Deal = {
-            id: `deal_${Date.now()}`,
-            name: data.name,
-            amount: data.amount,
-            status: 'In Progress',
-            closeDate: new Date().toISOString().split('T')[0],
-        };
-        onDealCreate(newDeal);
+        onDealCreate(data);
         toast({
             title: "Deal Created!",
             description: `${data.name} for $${data.amount.toLocaleString()} has been created for ${customer.name}.`,
@@ -353,13 +379,13 @@ const CreateDealDialog = ({ customer, onDealCreate }: { customer: Customer, onDe
 };
 
 
-const CustomerProfile = ({ customer, onStatusChange, onDealCreate }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, onDealCreate: (customerId: string, deal: Deal) => void }) => {
+const CustomerProfile = ({ customer, onStatusChange, onDealCreate }: { customer: Customer | null, onStatusChange: (customerId: string, newStatus: CustomerStatus) => void, onDealCreate: (customerId: string, deal: Omit<Deal, 'id' | 'status' | 'closeDate'>) => void }) => {
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => {
         setIsMounted(true);
     }, []);
 
-    const handleDealCreate = (deal: Deal) => {
+    const handleDealCreate = (deal: Omit<Deal, 'id' | 'status' | 'closeDate'>) => {
         if (customer) {
             onDealCreate(customer.id, deal);
         }
@@ -506,48 +532,60 @@ function DateRangePicker({ className, date, onSelect }: React.HTMLAttributes<HTM
 
 function InboxPageContent() {
   const searchParams = useSearchParams()
-  const conversationId = searchParams.get('conversationId')
+  const [conversationId, setConversationId] = useState(searchParams.get('conversationId'));
   
-  const [allConversations, setAllConversations] = useState<Conversation[]>(getConversations());
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   
-  const selectedConversation = useMemo(() => {
-    const conv = allConversations.find(c => c.id === conversationId);
-    if (conv) return conv;
-    if (!conversationId && allConversations.length > 0) {
-      return allConversations[0];
-    }
-    return null;
-  }, [allConversations, conversationId]);
-
   const [search, setSearch] = useState('');
   const [channelFilter, setChannelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFilter, setDateFilter] = useState<DateRange | undefined>();
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
 
-  const filteredConversations = useMemo(() => {
-    return allConversations
-      .filter(conv => 
-        conv.customer.name.toLowerCase().includes(search.toLowerCase()) ||
-        conv.customer.email.toLowerCase().includes(search.toLowerCase())
-      )
-      .filter(conv => channelFilter ? conv.channel === channelFilter : true)
-      .filter(conv => {
-        if (!statusFilter) return true;
-        if (statusFilter === 'read') return conv.unreadCount === 0;
-        if (statusFilter === 'unread') return conv.unreadCount > 0;
-        return true;
-      });
-  }, [allConversations, search, channelFilter, statusFilter, dateFilter]);
+  const fetchConversations = useCallback(async () => {
+    setLoading(true);
+    try {
+        const params = new URLSearchParams();
+        params.append('page', String(currentPage));
+        if (search) params.append('search', search);
+        if (channelFilter) params.append('channel', channelFilter);
+        if (statusFilter) params.append('status', statusFilter);
+        // dateFilter logic can be added here
+        
+        const data = await getConversations(params);
+        setConversations(data.conversations);
+        setTotalPages(data.totalPages);
 
-  const totalPages = Math.ceil(filteredConversations.length / CONVERSATIONS_PER_PAGE);
+        if (conversationId) {
+            const currentConv = data.conversations.find(c => c.id === conversationId);
+            if (currentConv) {
+                setSelectedConversation(currentConv);
+                if (currentConv.unreadCount > 0) {
+                    await markConversationAsRead(currentConv.id);
+                }
+            }
+        } else if (data.conversations.length > 0) {
+            const firstConv = data.conversations[0];
+            setSelectedConversation(firstConv);
+            setConversationId(firstConv.id);
+             if (firstConv.unreadCount > 0) {
+                await markConversationAsRead(firstConv.id);
+            }
+        }
+    } catch (error) {
+        console.error("Failed to fetch conversations", error);
+    } finally {
+        setLoading(false);
+    }
+  }, [currentPage, search, channelFilter, statusFilter, conversationId]);
 
-  const paginatedConversations = useMemo(() => {
-    const startIndex = (currentPage - 1) * CONVERSATIONS_PER_PAGE;
-    const endIndex = startIndex + CONVERSATIONS_PER_PAGE;
-    return filteredConversations.slice(startIndex, endIndex);
-  }, [filteredConversations, currentPage]);
-
+  useEffect(() => {
+      fetchConversations();
+  }, [fetchConversations]);
+  
   const handlePreviousPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -564,34 +602,51 @@ function InboxPageContent() {
     setCurrentPage(1);
   }
   
-  const handleSelectConversation = (conversation: Conversation) => {
-    updateConversationUnreadCount(conversation.id, 0);
-    setAllConversations(getConversations());
-    
-    // Using window.history.pushState to update URL without page reload
+  const handleSelectConversation = async (conversation: Conversation) => {
+    setSelectedConversation(conversation);
+    setConversationId(conversation.id);
+    if (conversation.unreadCount > 0) {
+        try {
+            await markConversationAsRead(conversation.id);
+            fetchConversations(); // re-fetch to update unread count
+        } catch (error) {
+            console.error("Failed to mark conversation as read", error);
+        }
+    }
     const url = new URL(window.location.href);
     url.searchParams.set('conversationId', conversation.id);
     window.history.pushState({ path: url.href }, '', url.href);
-    // We still call this to update our internal state, even though URL is handled manually
-    // setSelectedConversation(conversation); 
   };
   
-  const getSelectedConversation = () => {
-    if (conversationId) {
-      return allConversations.find(c => c.id === conversationId) ?? null;
+  const handleStatusChange = async (customerId: string, newStatus: CustomerStatus) => {
+    try {
+        await updateCustomerStatus(customerId, newStatus);
+        fetchConversations(); // Re-fetch to see updated customer status
+    } catch (error) {
+        console.error("Failed to update status", error);
     }
-    return paginatedConversations[0] ?? null;
-  }
-  
-  const handleStatusChange = (customerId: string, newStatus: CustomerStatus) => {
-    updateCustomerStatus(customerId, newStatus);
-    setAllConversations(getConversations());
   };
 
-  const handleDealCreate = (customerId: string, deal: Deal) => {
-    addDealToCustomer(customerId, deal);
-    setAllConversations(getConversations());
+  const handleDealCreate = async (customerId: string, deal: Omit<Deal, 'id' | 'status' | 'closeDate'>) => {
+    try {
+        await addDealToCustomer(customerId, deal);
+        fetchConversations(); // Re-fetch to see new deal
+    } catch (error) {
+        console.error("Failed to create deal", error);
+    }
   };
+  
+  const handleSendMessage = async (text: string) => {
+    if (!selectedConversation) return;
+    try {
+        await sendMessage(selectedConversation.id, text);
+        fetchConversations(); // Re-fetch to see new message
+    } catch (error) {
+        console.error("Failed to send message", error);
+    }
+  };
+  
+  if (loading && conversations.length === 0) return <div>Loading...</div>;
 
   const filtersWidget = (
     <Card>
@@ -641,37 +696,18 @@ function InboxPageContent() {
     <div className="flex flex-col h-full gap-4">
         {filtersWidget}
         <div className="flex-1 grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr_300px] gap-1 min-h-0">
-            <div className="flex flex-col gap-2 min-h-0">
-                <ConversationList 
-                    conversations={paginatedConversations}
-                    onSelectConversation={handleSelectConversation} 
-                    selectedConversationId={getSelectedConversation()?.id ?? null} 
-                />
-                <div className="flex items-center justify-end space-x-2 py-4 flex-shrink-0">
-                    <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                    >
-                    Previous
-                    </Button>
-                    <span className="text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                    </span>
-                    <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                    >
-                    Next
-                    </Button>
-                </div>
-            </div>
-            <MessageView conversation={getSelectedConversation()} />
+            <ConversationList 
+                conversations={conversations}
+                onSelectConversation={handleSelectConversation} 
+                selectedConversationId={selectedConversation?.id ?? null}
+                onNextPage={handleNextPage}
+                onPrevPage={handlePreviousPage}
+                currentPage={currentPage}
+                totalPages={totalPages}
+            />
+            <MessageView conversation={selectedConversation} onSendMessage={handleSendMessage} />
             <CustomerProfile 
-                customer={getSelectedConversation()?.customer ?? null} 
+                customer={selectedConversation?.customer ?? null} 
                 onStatusChange={handleStatusChange}
                 onDealCreate={handleDealCreate}
             />
@@ -687,5 +723,3 @@ export default function InboxPage() {
     </Suspense>
   )
 }
-
-    

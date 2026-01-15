@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -8,15 +9,9 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Building, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser, businessInfo } from "@/lib/data";
+import { currentUser, getBusinessInfo, getSupportMessages, sendSupportMessage } from "@/lib/data";
+import type { BusinessInfo, SupportMessage } from "@/lib/data";
 import { Separator } from '@/components/ui/separator';
-
-interface SupportMessage {
-  id: number;
-  text: string;
-  sender: 'user' | 'support';
-  timestamp: string;
-}
 
 const supportUser = {
   name: "Support Team",
@@ -24,53 +19,62 @@ const supportUser = {
 }
 
 export default function SupportPage() {
-  const [messages, setMessages] = useState<SupportMessage[]>([
-    {
-      id: 1,
-      text: "Hello! How can we help you today?",
-      sender: 'support',
-      timestamp: "10:30 AM",
-    },
-    {
-      id: 2,
-      text: "I'm having an issue with my account.",
-      sender: 'user',
-      timestamp: "10:31 AM",
-    },
-     {
-      id: 3,
-      text: "I see. Could you please provide more details about the issue you are facing?",
-      sender: 'support',
-      timestamp: "10:32 AM",
-    },
-  ]);
+  const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleSendMessage = () => {
+  const fetchMessages = async () => {
+      try {
+          const fetchedMessages = await getSupportMessages();
+          setMessages(fetchedMessages);
+      } catch (error) {
+          console.error("Failed to fetch support messages", error);
+      }
+  };
+  
+  useEffect(() => {
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [messagesData, infoData] = await Promise.all([
+                getSupportMessages(),
+                getBusinessInfo()
+            ]);
+            setMessages(messagesData);
+            setBusinessInfo(infoData);
+        } catch (error) {
+            console.error("Failed to fetch support page data", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchData();
+  }, []);
+
+  const handleSendMessage = async () => {
     if (newMessage.trim() === "") return;
 
-    const newMsg: SupportMessage = {
-      id: messages.length + 1,
+    const optimisticMessage: SupportMessage = {
+      id: Date.now(),
       text: newMessage,
       sender: 'user',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages([...messages, newMsg]);
+    setMessages(prev => [...prev, optimisticMessage]);
     setNewMessage("");
 
-    // Simulate a support reply
-    setTimeout(() => {
-        const replyMsg: SupportMessage = {
-            id: messages.length + 2,
-            text: "Thank you for the information. We are looking into it and will get back to you shortly.",
-            sender: 'support',
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        };
-        setMessages(prev => [...prev, replyMsg]);
-    }, 1500)
+    try {
+        await sendSupportMessage(newMessage.trim());
+        fetchMessages(); // Refetch messages to get the real one from server
+    } catch (error) {
+        console.error("Failed to send message", error);
+        setMessages(prev => prev.filter(m => m.id !== optimisticMessage.id)); // remove optimistic message on failure
+    }
   };
 
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="h-[calc(100vh-10rem)] grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -133,32 +137,34 @@ export default function SupportPage() {
                 </div>
             </CardFooter>
         </Card>
-        <Card className="h-full">
-            <CardHeader>
-                <CardTitle>Business Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-                <div className="flex items-center gap-3">
-                    <Building className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-medium">{businessInfo.companyName}</span>
-                </div>
-                <Separator />
-                <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">{businessInfo.address}</span>
-                </div>
-                <Separator />
-                <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-muted-foreground">{businessInfo.phone}</span>
-                </div>
-                <Separator />
-                <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-muted-foreground">{businessInfo.email}</span>
-                </div>
-            </CardContent>
-        </Card>
+        {businessInfo && (
+            <Card className="h-full">
+                <CardHeader>
+                    <CardTitle>Business Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div className="flex items-center gap-3">
+                        <Building className="h-5 w-5 text-muted-foreground" />
+                        <span className="font-medium">{businessInfo.companyName}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex items-start gap-3">
+                        <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
+                        <span className="text-muted-foreground">{businessInfo.address}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center gap-3">
+                        <Phone className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-muted-foreground">{businessInfo.phone}</span>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center gap-3">
+                        <Mail className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-muted-foreground">{businessInfo.email}</span>
+                    </div>
+                </CardContent>
+            </Card>
+        )}
     </div>
   );
 }

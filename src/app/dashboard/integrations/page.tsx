@@ -8,38 +8,33 @@ import { Label } from "@/components/ui/label";
 import { ChannelIcon } from "@/components/icons";
 import { CheckCircle, XCircle } from "lucide-react";
 import type { Channel } from "@/lib/data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { getIntegrations, connectIntegration, type Integration } from "@/lib/data";
 
 
-type IntegrationStatus = 'connected' | 'disconnected';
-
-interface Integration {
-  name: string;
-  channel: Channel;
-  description: string;
-  status: IntegrationStatus;
-}
-
-const initialIntegrations: Integration[] = [
-  { name: "WhatsApp", channel: "whatsapp", description: "Connect your WhatsApp Business account.", status: 'connected' },
-  { name: "Messenger", channel: "messenger", description: "Connect your Facebook Messenger.", status: 'disconnected' },
-  { name: "Instagram", channel: "instagram", description: "Connect your Instagram DMs.", status: 'connected' },
-  { name: "TikTok", channel: "tiktok", description: "Connect your TikTok messages.", status: 'disconnected' },
-];
-
-const IntegrationCard = ({ integration }: { integration: Integration }) => {
+const IntegrationCard = ({ integration, onUpdate }: { integration: Integration, onUpdate: () => void }) => {
   const { toast } = useToast();
-  const [status, setStatus] = useState<IntegrationStatus>(integration.status);
-  const isConnected = status === 'connected';
+  const [apiKey, setApiKey] = useState(integration.status === 'connected' ? "••••••••••••••••••••" : "");
+  const isConnected = integration.status === 'connected';
 
-  const handleToggle = () => {
-    const newStatus = isConnected ? 'disconnected' : 'connected';
-    setStatus(newStatus);
-    toast({
-        title: `Integration ${newStatus === 'connected' ? 'Connected' : 'Disconnected'}`,
-        description: `${integration.name} has been successfully ${newStatus}.`,
-    });
+  const handleToggle = async () => {
+    if (isConnected) {
+        // Disconnect logic would go here, maybe an API call
+        // For now, we'll just simulate it on the frontend
+        toast({ title: "Disconnected (simulated)", description: `${integration.name} has been disconnected.` });
+    } else {
+        try {
+            await connectIntegration(integration.channel, apiKey);
+            toast({
+                title: `Integration Connected`,
+                description: `${integration.name} has been successfully connected.`,
+            });
+            onUpdate();
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Connection Failed", description: `Could not connect ${integration.name}. Please check your API key.` });
+        }
+    }
   }
 
   return (
@@ -71,7 +66,13 @@ const IntegrationCard = ({ integration }: { integration: Integration }) => {
         <CardContent>
             <div className="space-y-2">
                 <Label htmlFor={`${integration.channel}-api-key`}>API Key</Label>
-                <Input id={`${integration.channel}-api-key`} placeholder="Enter your API key" defaultValue={isConnected ? "••••••••••••••••••••" : ""} />
+                <Input 
+                    id={`${integration.channel}-api-key`} 
+                    placeholder="Enter your API key" 
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    disabled={isConnected}
+                />
             </div>
         </CardContent>
         <CardFooter>
@@ -88,13 +89,32 @@ const IntegrationCard = ({ integration }: { integration: Integration }) => {
 }
 
 export default function IntegrationsPage() {
-  const [integrations, setIntegrations] = useState<Integration[]>(initialIntegrations);
+  const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchIntegrations = async () => {
+    setLoading(true);
+    try {
+      const data = await getIntegrations();
+      setIntegrations(data);
+    } catch (error) {
+      console.error("Failed to fetch integrations", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchIntegrations();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {integrations.map(integration => (
-            <IntegrationCard key={integration.channel} integration={integration} />
+            <IntegrationCard key={integration.channel} integration={integration} onUpdate={fetchIntegrations} />
           ))}
         </div>
     </div>

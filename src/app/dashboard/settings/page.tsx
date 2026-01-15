@@ -17,7 +17,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { businessInfo } from "@/lib/data";
+import { getBusinessInfo, updateBusinessInfo } from "@/lib/data";
+import { useEffect, useState } from "react";
+import type { BusinessInfo } from "@/lib/data";
 
 const formSchema = z.object({
   companyName: z.string().min(2, "Company name must be at least 2 characters."),
@@ -28,24 +30,48 @@ const formSchema = z.object({
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyName: businessInfo.companyName,
-      address: businessInfo.address,
-      phone: businessInfo.phone,
-      email: businessInfo.email,
+      companyName: "",
+      address: "",
+      phone: "",
+      email: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Settings saved!",
-      description: "Your business information has been updated.",
-    });
+  useEffect(() => {
+      const fetchInfo = async () => {
+          setLoading(true);
+          try {
+              const info = await getBusinessInfo();
+              form.reset(info);
+          } catch (error) {
+              console.error("Failed to fetch business info", error);
+              toast({ variant: 'destructive', title: 'Error', description: 'Could not load business information.' });
+          } finally {
+              setLoading(false);
+          }
+      };
+      fetchInfo();
+  }, [form, toast]);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+        await updateBusinessInfo(values as BusinessInfo);
+        toast({
+          title: "Settings saved!",
+          description: "Your business information has been updated.",
+        });
+    } catch (error) {
+        console.error("Failed to update business info", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not save business information.' });
+    }
   }
+  
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">

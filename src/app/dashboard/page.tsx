@@ -24,18 +24,14 @@ import {
   ChartLegendContent,
 } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Tooltip } from 'recharts';
-import { getDashboardStats, getConversationData, getPlatformStats, getCustomers } from '@/lib/data';
-import { MessageSquare, Users, CheckCircle, Clock, DollarSign } from 'lucide-react';
+import { getDashboardStats, getConversationData, getPlatformStats, getDealsByStage } from '@/lib/data';
+import type { DashboardStats, ConversationTrendPoint, PlatformStats, DealStageValue } from '@/lib/data';
+import { MessageSquare, Users, CheckCircle, Clock } from 'lucide-react';
 import type { ChartConfig } from '@/components/ui/chart';
 import { ChannelIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import type { Customer } from '@/lib/data';
-import { useMemo } from 'react';
-
-const chartData = getConversationData();
-const stats = getDashboardStats();
-const platformStats = getPlatformStats();
+import { useEffect, useState } from 'react';
 
 const chartConfig = {
   new: {
@@ -48,16 +44,6 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-const funnelStages: (Customer['status'])[] = ['new', 'contacted', 'qualified', 'demo', 'won'];
-const stageLabels: Record<Customer['status'], string> = {
-  new: 'New',
-  contacted: 'Contacted',
-  qualified: 'Qualified',
-  demo: 'Demo',
-  won: 'Won',
-  unqualified: 'Unqualified'
-};
-
 const dealsByStageConfig = {
   amount: {
     label: "Amount",
@@ -66,24 +52,43 @@ const dealsByStageConfig = {
 } satisfies ChartConfig;
 
 export default function DashboardPage() {
-    const customers = useMemo(() => getCustomers(), []);
-    const dealsByStageData = useMemo(() => {
-        const stageData: { [key in Customer['status']]?: number } = {};
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [chartData, setChartData] = useState<ConversationTrendPoint[]>([]);
+    const [platformStats, setPlatformStats] = useState<PlatformStats[]>([]);
+    const [dealsByStageData, setDealsByStageData] = useState<DealStageValue[]>([]);
+    const [loading, setLoading] = useState(true);
 
-        for (const customer of customers) {
-            if (funnelStages.includes(customer.status)) {
-                const dealAmount = customer.dealHistory.find(d => d.status === 'In Progress')?.amount ?? 0;
-                if (!stageData[customer.status]) {
-                    stageData[customer.status] = 0;
-                }
-                stageData[customer.status]! += dealAmount;
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const [statsData, conversationData, platformStatsData, dealsByStageData] = await Promise.all([
+                    getDashboardStats(),
+                    getConversationData(),
+                    getPlatformStats(),
+                    getDealsByStage(),
+                ]);
+                setStats(statsData);
+                setChartData(conversationData);
+                setPlatformStats(platformStatsData);
+                setDealsByStageData(dealsByStageData);
+            } catch (error) {
+                console.error("Failed to fetch dashboard data:", error);
+            } finally {
+                setLoading(false);
             }
-        }
-        return funnelStages.map(stage => ({
-            stage: stageLabels[stage],
-            amount: stageData[stage] ?? 0,
-        }));
-    }, [customers]);
+        };
+
+        fetchData();
+    }, []);
+    
+    if (loading) {
+        return <div>Loading...</div>; // Or a more sophisticated skeleton loader
+    }
+
+    if (!stats) {
+        return <div>Failed to load dashboard data.</div>
+    }
 
   return (
     <div className="space-y-8">

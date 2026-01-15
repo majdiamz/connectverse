@@ -6,62 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { getServiceStatus, getUpdateLogs, type ServiceStatusItem, type UpdateLog } from "@/lib/data";
+import { useState, useEffect } from "react";
 
 type ServiceStatus = "operational" | "degraded" | "outage";
-
-interface Service {
-  name: string;
-  status: ServiceStatus;
-  lastChecked: string;
-}
-
-interface UpdateLog {
-  version: string;
-  date: string;
-  description: string;
-  changes: string[];
-}
-
-const services: Service[] = [
-  { name: "API Service", status: "operational", lastChecked: "a few seconds ago" },
-  { name: "Messaging Gateway", status: "operational", lastChecked: "a few seconds ago" },
-  { name: "Database", status: "operational", lastChecked: "1 minute ago" },
-  { name: "Real-time Service", status: "degraded", lastChecked: "5 minutes ago" },
-  { name: "Authentication Service", status: "operational", lastChecked: "1 minute ago" },
-  { name: "Webhook Processor", status: "outage", lastChecked: "15 minutes ago" },
-];
-
-const updateLogs: UpdateLog[] = [
-  {
-    version: "v1.2.0",
-    date: "2024-07-26",
-    description: "Funnel View and Inbox Enhancements",
-    changes: [
-      "Added List View to Funnel page",
-      "Enabled stage changes from Inbox",
-      "UI adjustments for compactness",
-    ],
-  },
-  {
-    version: "v1.1.5",
-    date: "2024-07-24",
-    description: "Customer and Integration Fixes",
-    changes: [
-      "Fixed customer avatar display bug",
-      "Improved WhatsApp integration stability",
-    ],
-  },
-  {
-    version: "v1.1.0",
-    date: "2024-07-20",
-    description: "Initial Dashboard and Inbox",
-    changes: [
-      "Launched dashboard analytics",
-      "Implemented core inbox functionality",
-    ],
-  },
-];
-
 
 const statusConfig: Record<ServiceStatus, { text: string; className: string; icon: React.ReactNode }> = {
   operational: {
@@ -82,7 +30,32 @@ const statusConfig: Record<ServiceStatus, { text: string; className: string; ico
 };
 
 export default function StatusPage() {
+  const [services, setServices] = useState<ServiceStatusItem[]>([]);
+  const [updateLogs, setUpdateLogs] = useState<UpdateLog[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [servicesData, logsData] = await Promise.all([
+          getServiceStatus(),
+          getUpdateLogs(),
+        ]);
+        setServices(servicesData);
+        setUpdateLogs(logsData);
+      } catch (error) {
+        console.error("Failed to fetch status data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+  
   const overallStatus: ServiceStatus = services.some(s => s.status === 'outage') ? 'outage' : services.some(s => s.status === 'degraded') ? 'degraded' : 'operational';
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div className="space-y-6">
