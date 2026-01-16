@@ -35,13 +35,39 @@ npm install
 
 ## 3. Environment Variables
 
-Create a `.env.local` file in the root of your project and add the following environment variable. This secret is used for signing authentication tokens.
+Create a `.env.local` file in the root of your project to store your local environment variables.
+
+### Backend API URL
+
+This application is designed to connect to a backend server for its data. You must specify the base URL for this backend API. By default, the backend is expected to be running on `http://localhost:3001`.
+
+```
+NEXT_PUBLIC_API_BASE_URL="http://localhost:3001/api"
+```
+
+You can change this value to point to your deployed backend API in production.
+
+**Note on CORS**: Your backend server must be configured to accept requests from the frontend's origin (e.g., `http://localhost:9002` in local development). This is known as Cross-Origin Resource Sharing (CORS).
+
+### JWT Secret
+
+A secret key is required for signing authentication tokens (JWT).
 
 ```
 JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 ```
 
-**Important**: For a real production environment, you must use a strong, unique secret and not commit it to version control.
+### Example `.env.local` file
+
+Your final `.env.local` file should look something like this:
+
+```
+NEXT_PUBLIC_API_BASE_URL="http://localhost:3001/api"
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
+```
+
+**Important**: For a real production environment, you must use a strong, unique secret for `JWT_SECRET` and not commit your `.env` files to version control.
+
 
 ## 4. Running the Development Server
 
