@@ -53,7 +53,6 @@ export function AppSidebar() {
             description: 'You have been successfully logged out.',
         });
         router.push('/login');
-        router.refresh();
     } catch (error) {
         toast({
             variant: 'destructive',

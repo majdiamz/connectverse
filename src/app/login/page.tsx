@@ -34,7 +34,6 @@ export default function LoginPage() {
             description: 'Welcome back!',
         });
         router.push('/dashboard');
-        router.refresh(); // To ensure server-side state is updated
       } else {
         const data = await response.json();
         toast({
