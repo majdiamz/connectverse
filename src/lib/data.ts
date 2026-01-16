@@ -194,7 +194,7 @@ export const sendEmail = (email: NewEmail): Promise<Email> =>
     }).then(handleResponse);
 
 export const updateEmail = (emailId: string, updates: Partial<Pick<Email, 'isRead'>>): Promise<Email> =>
-    fetch(`${API_BA SE_URL}/emails/${emailId}`, {
+    fetch(`${API_BASE_URL}/emails/${emailId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
