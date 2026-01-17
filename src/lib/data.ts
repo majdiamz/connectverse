@@ -109,7 +109,7 @@ export interface BusinessInfo {
     email: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+const API_BASE_URL = '/api';
 
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
@@ -189,7 +189,7 @@ export const sendEmail = (email: NewEmail): Promise<Email> =>
     }).then(handleResponse);
 
 export const updateEmail = (emailId: string, updates: Partial<Pick<Email, 'isRead'>>): Promise<Email> =>
-    fetch(`${API_BASE_URL}/emails/${emailId}`, {
+    fetch(`${API_BE_URL}/emails/${emailId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
