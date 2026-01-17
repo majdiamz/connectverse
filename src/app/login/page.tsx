@@ -19,8 +19,20 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!backendUrl) {
+        toast({
+            variant: 'destructive',
+            title: 'Configuration Error',
+            description: 'The backend API URL is not configured.',
+        });
+        setLoading(false);
+        return;
+    }
+
     try {
-      const response = await fetch('/api/auth/login', {
+      // Direct call to the actual backend API
+      const apiResponse = await fetch(`${backendUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,20 +40,44 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.ok) {
-        toast({
-            title: 'Login Successful',
-            description: 'Welcome back!',
-        });
-        router.push('/dashboard');
-      } else {
-        const data = await response.json();
+      const data = await apiResponse.json();
+
+      if (!apiResponse.ok) {
         toast({
             variant: 'destructive',
             title: 'Login Failed',
-            description: data.message || 'Invalid credentials. Please try again.',
+            description: data.error || 'Invalid credentials. Please try again.',
         });
+        setLoading(false);
+        return;
       }
+      
+      // Call our own API route to set the httpOnly cookie
+      const cookieResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data), // Pass the { user, token } payload
+      });
+
+      if (!cookieResponse.ok) {
+          const cookieErrorData = await cookieResponse.json();
+          toast({
+              variant: 'destructive',
+              title: 'Session Error',
+              description: cookieErrorData.message || 'Could not start a session.',
+          });
+          setLoading(false);
+          return;
+      }
+
+      toast({
+          title: 'Login Successful',
+          description: 'Welcome back!',
+      });
+      router.push('/dashboard');
+
     } catch (error) {
       toast({
             variant: 'destructive',

@@ -1,35 +1,16 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
+// This route now acts as a "session setter".
+// It receives the token from the frontend (which got it from the backend)
+// and sets it as a secure, httpOnly cookie.
 export async function POST(request: Request) {
-  const body = await request.json();
-  const { email, password } = body;
-
-  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!backendUrl) {
-    console.error('Backend API URL is not configured.');
-    return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
-  }
-
   try {
-    const apiResponse = await fetch(`${backendUrl}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await apiResponse.json();
-
-    if (!apiResponse.ok) {
-      return NextResponse.json({ message: data.error || 'Invalid credentials' }, { status: apiResponse.status });
-    }
-    
-    const { token, user } = data;
+    const body = await request.json();
+    const { token, user } = body;
 
     if (!token || !user) {
-      return NextResponse.json({ message: 'Invalid response from auth server' }, { status: 500 });
+      return NextResponse.json({ message: 'Invalid token or user data provided' }, { status: 400 });
     }
 
     cookies().set('token', token, {
@@ -39,10 +20,10 @@ export async function POST(request: Request) {
       path: '/',
     });
 
-    return NextResponse.json({ success: true, user });
+    return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error('Login API route error:', error);
-    return NextResponse.json({ message: 'An internal error occurred.' }, { status: 500 });
+    console.error('Set cookie error:', error);
+    return NextResponse.json({ message: 'An internal error occurred while setting session.' }, { status: 500 });
   }
 }
