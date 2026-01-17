@@ -9,11 +9,7 @@ async function handler(req: NextRequest) {
     return NextResponse.json({ message: 'Authentication token is missing.' }, { status: 401 });
   }
   
-  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!backendUrl) {
-    console.error('Backend API URL is not configured.');
-    return NextResponse.json({ message: 'Internal server error: Backend API URL not set.' }, { status: 500 });
-  }
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
   // e.g. /api/dashboard/stats -> dashboard/stats
   const path = req.nextUrl.pathname.substring('/api/'.length);
