@@ -1,159 +1,92 @@
 # ConnectVerse Product Overview
 
-**Application Purpose:**
-ConnectVerse is a unified communication platform designed to help businesses manage customer interactions from multiple messaging channels in one place. It centralizes conversations, customer data, and sales activities to improve team efficiency and customer engagement.
+This document outlines the purpose of each page in the ConnectVerse application and the key actions a user can perform.
 
----
+## 1. Dashboard
 
-## 1. Login Page
+**Purpose:** To provide a high-level, at-a-glance overview of business performance and key metrics across all communication channels.
 
-**Purpose:**
-To secure the application and allow authenticated users to access the dashboard.
+**Use Cases:**
+- **View Key Statistics:** Quickly see total conversations, new leads, average response rate, and the number of currently open conversations.
+- **Analyze Conversation Trends:** Monitor the volume of new vs. resolved conversations over the past six months to understand support load and team efficiency.
+- **Track Deals Pipeline:** See the total monetary value of deals at each stage of the sales funnel (e.g., New, Qualified, Won).
+- **Monitor Channel Performance:** Compare performance metrics across different integrated platforms (WhatsApp, Messenger, etc.), including conversation volume, leads generated, and conversion rates.
 
-**User Use Cases:**
-- Log into the application using email and password.
-- See an error message for invalid credentials.
-- Be redirected to the dashboard upon successful login.
-- If already logged in, be automatically redirected to the dashboard when trying to access the login page.
+## 2. Inbox
 
----
+**Purpose:** To provide a unified inbox where users can manage all customer conversations from every integrated channel in one place.
 
-## 2. Dashboard
+**Use Cases:**
+- **View All Conversations:** See a paginated list of all conversations, which can be filtered by channel, read/unread status, date, or searched by customer name/email.
+- **Engage in Real-time Chat:** Select a conversation to view the full message history and send new messages to the customer.
+- **Access Customer Context:** While in a conversation, view the customer's profile, including their contact details, funnel stage, and deal history.
+- **Update Customer Status:** Change a customer's stage in the sales funnel directly from the inbox view.
+- **Create New Deals:** Initiate and create a new sales deal for a customer without leaving the conversation.
+- **Load More Messages:** For long conversations, load older messages as needed to see the full history.
 
-**Purpose:**
-To provide a high-level overview of key business metrics and performance indicators at a glance. It serves as the main entry point after login.
+## 3. Email
 
-**User Use Cases:**
-- View total number of conversations.
-- See the count of new leads acquired.
-- Monitor the average response rate to customer messages.
-- Track the number of currently open or unresolved conversations.
-- Analyze conversation trends (new vs. resolved) over the last six months in a bar chart.
-- Visualize the total value of deals in each stage of the sales funnel.
-- Compare performance metrics (conversations, leads, response rate, conversion rate) across all integrated platforms (WhatsApp, Messenger, etc.).
+**Purpose:** To provide a fully functional email client within the application for managing email communications.
 
----
+**Use Cases:**
+- **Manage Mailbox Folders:** Navigate between different email folders (Inbox, Sent, Drafts, Trash).
+- **Compose and Send Emails:** Open a dialog to write and send new emails to any recipient.
+- **Read and Reply to Emails:** View incoming emails, see the sender's details, and use reply/forward actions.
+- **Mark Emails as Read:** Selecting an email automatically marks it as read.
+- **Search Emails:** Find specific emails using a search bar.
 
-## 3. Inbox
+## 4. Customers
 
-**Purpose:**
-To manage all customer conversations from different channels in a single, unified view. This is the central hub for real-time communication.
+**Purpose:** To act as a Customer Relationship Management (CRM) hub for viewing, managing, and organizing all customer information.
 
-**User Use Cases:**
-- View a list of all conversations, filterable by search, channel, and read/unread status.
-- See customer name, avatar, last message snippet, and timestamp for each conversation.
-- Identify unread conversations via a badge showing the count of new messages.
-- Select a conversation to view the full message history.
-- Send a reply to a customer within the selected conversation.
-- View customer profile details (contact info, funnel stage, deals, tags) alongside the conversation.
-- Change a customer's funnel stage directly from the inbox view.
-- Create a new sales deal for the customer.
-- Paginate through the conversation list.
+**Use Cases:**
+- **View and Filter Customer List:** See a paginated list of all customers. Filter the list by source (channel), status, tags, or the date they were added.
+- **Search for Customers:** Quickly find a specific customer using the search bar.
+- **Add a New Customer:** Manually add a new customer by filling out a form with their details.
+- **Edit Existing Customer:** Update the information for any customer.
+- **View Customer Details:** Click on a customer to open a detailed modal view showing their complete profile, deal history, and a link to their conversations.
+- **Bulk Actions:** Select multiple customers to perform bulk actions, such as exporting their data to a CSV file.
 
----
+## 5. Funnel
 
-## 4. Email
+**Purpose:** To provide a visual, Kanban-style board of the sales funnel, allowing users to track and manage customers as they move through different stages.
 
-**Purpose:**
-To provide a fully-functional email client within the application, allowing users to manage their emails without leaving ConnectVerse.
+**Use Cases:**
+- **Visualize the Sales Pipeline:** See all customers organized into columns representing each stage of the funnel (New, Contacted, Qualified, Demo, Won, Unqualified).
+- **Update Customer Status via Drag-and-Drop:** Move customers between stages by dragging and dropping their cards from one column to another.
+- **View Stage Value:** See the total number of customers and the total monetary value of deals in each stage.
+- **Filter the Funnel View:** Apply filters based on channel, tags, or date to refine the customers shown on the board.
+- **Switch to List View:** Toggle between the Kanban board and a traditional table view of all customers in the funnel.
 
-**User Use Cases:**
-- View emails organized into folders (Inbox, Sent, Drafts, Trash).
-- Compose and send a new email to any recipient.
-- Read incoming emails, which marks them as "read".
-- View email content, including sender details and timestamp.
-- Reply to or forward an email.
-- See a list of emails with sender, subject, and a snippet.
-- Search for specific emails.
+## 6. Integrations
 
----
+**Purpose:** To allow users to connect and manage their accounts from various messaging platforms.
 
-## 5. Customers
+**Use Cases:**
+- **View Integration Status:** See a list of all supported channels (WhatsApp, Messenger, Instagram, TikTok) and whether they are currently connected or disconnected.
+- **Connect a New Channel:** Enter an API key for a disconnected channel to enable its integration with ConnectVerse.
+- **Disconnect a Channel:** Remove an existing integration.
 
-**Purpose:**
-To act as a Customer Relationship Management (CRM) tool for managing all customer information.
+## 7. Status
 
-**User Use Cases:**
-- View a comprehensive list of all customers in a table.
-- See key customer details: name, avatar, email, phone, status, and tags.
-- Add a new customer with their contact details and initial status.
-- Edit the details of an existing customer.
-- Select one or more customers to perform bulk actions, like exporting to a CSV file.
-- Filter the customer list by source, status, tags, or join date.
-- Search for a specific customer.
-- Open a detailed view for a customer to see their full profile, including deal history.
+**Purpose:** To provide transparency into the operational status of the application's services and to log recent updates.
 
----
+**Use Cases:**
+- **Check Service Health:** View the real-time status (Operational, Degraded, Outage) of all core services.
+- **View Update History:** Read through a log of recent application updates, including version numbers, dates, and a list of changes for each version.
 
-## 6. Funnel
+## 8. Support
 
-**Purpose:**
-To provide a visual, Kanban-style representation of the sales pipeline, allowing users to track and manage customers through different stages.
+**Purpose:** To offer a direct line of communication with the support team for help and troubleshooting.
 
-**User Use Cases:**
-- View customers organized into columns based on their funnel stage (New, Contacted, Qualified, etc.).
-- See the total number of customers and the total deal value for each stage.
-- Drag and drop a customer card from one column to another to update their status.
-- Filter the entire funnel view by channel, tags, or date range.
-- Toggle between a Kanban board view and a traditional list/table view.
-- Click on a customer card to navigate to their conversation in the inbox.
+**Use Cases:**
+- **Live Chat with Support:** Send and receive messages from the support team in a real-time chat interface.
+- **View Business Information:** Easily access the company's contact details (address, phone, email) for alternative ways to get in touch.
 
----
+## 9. FAQ
 
-## 7. Integrations
+**Purpose:** To provide a self-service resource where users can find answers to frequently asked questions, particularly about API key integration.
 
-**Purpose:**
-To allow users to connect and manage their business's messaging channel accounts (e.g., WhatsApp, Messenger).
-
-**User Use Cases:**
-- View a list of all available channel integrations (WhatsApp, Messenger, Instagram, TikTok).
-- See the current connection status (Connected/Disconnected) for each channel.
-- Connect a new channel by providing its API key.
-- Disconnect an already connected channel.
-
----
-
-## 8. Status
-
-**Purpose:**
-To provide transparency about the application's operational health and recent updates.
-
-**User Use Cases:**
-- Check the real-time status (Operational, Degraded, Outage) of all core services.
-- View a log of past application updates, including version numbers, dates, and a summary of changes.
-
----
-
-## 9. Support
-
-**Purpose:**
-To provide a direct line of communication with the ConnectVerse support team for help and assistance.
-
-**User Use Cases:**
-- View the history of chat conversations with the support team.
-- Send a new message to the support team to ask a question or report an issue.
-- View the business's contact information for quick reference.
-
----
-
-## 10. FAQ
-
-**Purpose:**
-To provide a self-service resource where users can find answers to frequently asked questions, particularly about setting up integrations.
-
-**User Use Cases:**
-- Browse a list of common questions.
-- Expand a question to read the detailed answer and instructions.
-- Find links to official API documentation for each messaging channel.
-
----
-
-## 11. Settings
-
-**Purpose:**
-To allow users to configure their business's profile information.
-
-**User Use Cases:**
-- View the current business profile information (company name, address, phone, email).
-- Update the business profile information.
-- Save the changes to the profile.
+**Use Cases:**
+- **Find Integration Guides:** Read step-by-step instructions on how to obtain API keys for WhatsApp, Messenger, Instagram, and TikTok.
+- **Access Official Documentation:** Find direct links to the official developer documentation for each platform.
