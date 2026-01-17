@@ -19,16 +19,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    if (!backendUrl) {
-        toast({
-            variant: 'destructive',
-            title: 'Configuration Error',
-            description: 'The backend API URL is not configured.',
-        });
-        setLoading(false);
-        return;
-    }
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
     try {
       // Direct call to the actual backend API
