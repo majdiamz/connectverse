@@ -3,8 +3,8 @@
 
 import { useState, useEffect, Suspense, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { Conversation, Message, Customer, CustomerStatus, Deal } from '@/lib/data';
-import { getConversations, currentUser, markConversationAsRead, updateCustomerStatus, addDealToCustomer, sendMessage } from '@/lib/data';
+import type { Conversation, Message, Customer, CustomerStatus, Deal, User } from '@/lib/data';
+import { getConversations, markConversationAsRead, updateCustomerStatus, addDealToCustomer, sendMessage } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useAuth } from '@/hooks/use-auth';
 
 const MESSAGES_PER_PAGE = 8;
 
@@ -173,7 +174,7 @@ const ConversationList = ({
     )
 };
 
-const MessageView = ({ conversation, onSendMessage }: { conversation: Conversation | null, onSendMessage: (text: string) => void }) => {
+const MessageView = ({ conversation, onSendMessage, user }: { conversation: Conversation | null, onSendMessage: (text: string) => void, user: User | null }) => {
   const [visibleMessagesCount, setVisibleMessagesCount] = useState(MESSAGES_PER_PAGE);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number | null>(null);
@@ -275,8 +276,8 @@ const MessageView = ({ conversation, onSendMessage }: { conversation: Conversati
                     </div>
                     {message.sender === 'user' && (
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={currentUser.avatarUrl} />
-                        <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={user?.avatarUrl} />
+                        <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
                       </Avatar>
                     )}
                   </div>
@@ -544,6 +545,8 @@ function InboxPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const { user, loading: userLoading } = useAuth();
+
 
   const fetchConversations = useCallback(async () => {
     setLoading(true);
@@ -646,7 +649,7 @@ function InboxPageContent() {
     }
   };
   
-  if (loading && conversations.length === 0) return <div>Loading...</div>;
+  if ((loading && conversations.length === 0) || userLoading) return <div>Loading...</div>;
 
   const filtersWidget = (
     <Card>
@@ -705,7 +708,7 @@ function InboxPageContent() {
                 currentPage={currentPage}
                 totalPages={totalPages}
             />
-            <MessageView conversation={selectedConversation} onSendMessage={handleSendMessage} />
+            <MessageView conversation={selectedConversation} onSendMessage={handleSendMessage} user={user} />
             <CustomerProfile 
                 customer={selectedConversation?.customer ?? null} 
                 onStatusChange={handleStatusChange}

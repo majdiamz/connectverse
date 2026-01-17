@@ -9,9 +9,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Building, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser, getBusinessInfo, getSupportMessages, sendSupportMessage } from "@/lib/data";
+import { getBusinessInfo, getSupportMessages, sendSupportMessage } from "@/lib/data";
 import type { BusinessInfo, SupportMessage } from "@/lib/data";
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/use-auth';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const supportUser = {
   name: "Support Team",
@@ -23,6 +25,7 @@ export default function SupportPage() {
   const [newMessage, setNewMessage] = useState("");
   const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const { user, loading: userLoading } = useAuth();
 
   const fetchMessages = async () => {
       try {
@@ -74,7 +77,7 @@ export default function SupportPage() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading || userLoading) return <div>Loading...</div>;
 
   return (
     <div className="h-[calc(100vh-10rem)] grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -109,8 +112,8 @@ export default function SupportPage() {
                             </div>
                             {message.sender === 'user' && (
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src={currentUser.avatarUrl} />
-                                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={user?.avatarUrl} />
+                                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
                             </Avatar>
                             )}
                         </div>

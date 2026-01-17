@@ -17,7 +17,6 @@ import {
   LayoutDashboard,
   MessageSquare,
   Users,
-  Settings,
   LogOut,
   LifeBuoy,
   KanbanSquare,
@@ -26,9 +25,10 @@ import {
   Server,
   Mail,
 } from 'lucide-react';
-import { currentUser } from '@/lib/data';
 import { Separator } from './ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { Skeleton } from './ui/skeleton';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -44,6 +44,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -115,17 +116,27 @@ export function AppSidebar() {
             </SidebarMenuItem>
         </SidebarMenu>
         <Separator className='my-2' />
-         <div className="flex items-center gap-3 p-2">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={currentUser.avatarUrl} alt={currentUser.name} data-ai-hint="professional headshot" />
-              <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="font-semibold">{currentUser.name}</span>
-              <span className="text-xs text-muted-foreground">alex.green@example.com</span>
+         {loading || !user ? (
+            <div className="flex items-center gap-3 p-2">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="flex flex-col gap-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
             </div>
-            <LogOut onClick={handleLogout} className="ml-auto h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground" />
-          </div>
+         ) : (
+            <div className="flex items-center gap-3 p-2">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user.avatarUrl} alt={user.name} data-ai-hint="professional headshot" />
+                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col">
+                  <span className="font-semibold">{user.name}</span>
+                  <span className="text-xs text-muted-foreground">{user.email}</span>
+                </div>
+                <LogOut onClick={handleLogout} className="ml-auto h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground" />
+              </div>
+         )}
       </SidebarFooter>
     </Sidebar>
   );

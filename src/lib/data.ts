@@ -4,6 +4,7 @@ export type Channel = "whatsapp" | "messenger" | "instagram" | "tiktok";
 export interface User {
   id: string;
   name: string;
+  email: string;
   avatarUrl: string;
 }
 
@@ -107,12 +108,6 @@ export interface BusinessInfo {
     phone: string;
     email: string;
 }
-
-export const currentUser: User = {
-  id: "user_01",
-  name: "Alex Green",
-  avatarUrl: "https://picsum.photos/seed/user/100/100",
-};
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
