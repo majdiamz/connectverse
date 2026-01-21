@@ -12,9 +12,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Invalid token or user data provided' }, { status: 400 });
     }
 
-    // Build cookie attributes manually for better cross-environment compatibility
-    const isProduction = process.env.NODE_ENV === 'production';
     const maxAge = 60 * 60 * 24 * 7; // 7 days
+
+    // Check if request is over HTTPS (check forwarded proto for reverse proxy setups)
+    const forwardedProto = request.headers.get('x-forwarded-proto');
+    const isHttps = forwardedProto === 'https' || new URL(request.url).protocol === 'https:';
 
     const cookieParts = [
       `token=${token}`,
@@ -24,8 +26,8 @@ export async function POST(request: Request) {
       `SameSite=Lax`,
     ];
 
-    // Only add Secure flag in production with HTTPS
-    if (isProduction) {
+    // Only add Secure flag when actually on HTTPS
+    if (isHttps) {
       cookieParts.push('Secure');
     }
 
