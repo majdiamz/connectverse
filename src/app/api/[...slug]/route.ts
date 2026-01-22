@@ -32,10 +32,15 @@ async function handler(req: NextRequest) {
     });
 
     // Forward the response from the backend to the client
+    // Remove content-encoding headers since Node's fetch auto-decompresses
+    const responseHeaders = new Headers(response.headers);
+    responseHeaders.delete('content-encoding');
+    responseHeaders.delete('content-length');
+
     return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers,
+      headers: responseHeaders,
     });
 
   } catch (error) {
