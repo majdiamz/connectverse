@@ -189,7 +189,7 @@ export const sendEmail = (email: NewEmail): Promise<Email> =>
     }).then(handleResponse);
 
 export const updateEmail = (emailId: string, updates: Partial<Pick<Email, 'isRead'>>): Promise<Email> =>
-    fetch(`${API_BE_URL}/emails/${emailId}`, {
+    fetch(`${API_BASE_URL}/emails/${emailId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -203,12 +203,16 @@ export interface Integration {
   status: 'connected' | 'disconnected';
 }
 export const getIntegrations = (): Promise<Integration[]> => fetch(`${API_BASE_URL}/integrations`).then(handleResponse);
-export const connectIntegration = (channel: Channel, apiKey: string): Promise<void> => 
+export const connectIntegration = (channel: Channel, apiKey: string): Promise<void> =>
     fetch(`${API_BASE_URL}/integrations/${channel}/connect`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey }),
     }).then(res => { if(!res.ok) throw new Error('Failed to connect integration')});
+export const disconnectIntegration = (channel: Channel): Promise<void> =>
+    fetch(`${API_BASE_URL}/integrations/${channel}/disconnect`, {
+        method: 'POST',
+    }).then(res => { if(!res.ok) throw new Error('Failed to disconnect integration')});
 
 // Settings
 export const getBusinessInfo = (): Promise<BusinessInfo> => fetch(`${API_BASE_URL}/settings/business-info`).then(handleResponse);

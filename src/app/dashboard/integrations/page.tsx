@@ -10,7 +10,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 import type { Channel } from "@/lib/data";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getIntegrations, connectIntegration, type Integration } from "@/lib/data";
+import { getIntegrations, connectIntegration, disconnectIntegration, type Integration } from "@/lib/data";
 
 
 const IntegrationCard = ({ integration, onUpdate }: { integration: Integration, onUpdate: () => void }) => {
@@ -20,9 +20,16 @@ const IntegrationCard = ({ integration, onUpdate }: { integration: Integration, 
 
   const handleToggle = async () => {
     if (isConnected) {
-        // Disconnect logic would go here, maybe an API call
-        // For now, we'll just simulate it on the frontend
-        toast({ title: "Disconnected (simulated)", description: `${integration.name} has been disconnected.` });
+        try {
+            await disconnectIntegration(integration.channel);
+            toast({
+                title: "Integration Disconnected",
+                description: `${integration.name} has been disconnected.`,
+            });
+            onUpdate();
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Disconnect Failed", description: `Could not disconnect ${integration.name}.` });
+        }
     } else {
         try {
             await connectIntegration(integration.channel, apiKey);
