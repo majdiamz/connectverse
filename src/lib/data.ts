@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   avatarUrl: string;
+  role: 'admin' | 'commercial';
 }
 
 export type CustomerStatus = 'new' | 'contacted' | 'qualified' | 'unqualified' | 'demo' | 'won';
@@ -213,6 +214,32 @@ export const disconnectIntegration = (channel: Channel): Promise<void> =>
     fetch(`${API_BASE_URL}/integrations/${channel}/disconnect`, {
         method: 'POST',
     }).then(res => { if(!res.ok) throw new Error('Failed to disconnect integration')});
+
+// WhatsApp Integrations
+export interface WhatsAppIntegration {
+  id: string;
+  name: string;
+  status: 'connecting' | 'connected' | 'disconnected';
+  whatsappPhoneNumber: string | null;
+  user: { id: string; name: string; email: string } | null;
+  createdAt: string;
+}
+
+export const getWhatsAppIntegrations = (): Promise<WhatsAppIntegration[]> =>
+    fetch(`${API_BASE_URL}/integrations/whatsapp`).then(handleResponse);
+
+export const connectWhatsApp = (): Promise<{ integrationId: string; status: string }> =>
+    fetch(`${API_BASE_URL}/integrations/whatsapp/connect`, {
+        method: 'POST',
+    }).then(handleResponse);
+
+export const getWhatsAppQR = (integrationId: string): Promise<{ qrCode: string | null; status: string }> =>
+    fetch(`${API_BASE_URL}/integrations/whatsapp/${integrationId}/qr`).then(handleResponse);
+
+export const disconnectWhatsApp = (integrationId: string): Promise<void> =>
+    fetch(`${API_BASE_URL}/integrations/whatsapp/${integrationId}/disconnect`, {
+        method: 'POST',
+    }).then(res => { if(!res.ok) throw new Error('Failed to disconnect WhatsApp')});
 
 // Settings
 export const getBusinessInfo = (): Promise<BusinessInfo> => fetch(`${API_BASE_URL}/settings/business-info`).then(handleResponse);
