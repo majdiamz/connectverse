@@ -80,7 +80,13 @@ export function AppSidebar() {
 
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {navItems.map((item) => (
+          {navItems
+            .filter((item) => {
+              // Hide Inbox for commercial users
+              if (item.href === '/dashboard/inbox' && user?.role === 'commercial') return false;
+              return true;
+            })
+            .map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href}>
                 <SidebarMenuButton

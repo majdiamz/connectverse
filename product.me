@@ -14,14 +14,14 @@ This document outlines the purpose of each page in the ConnectVerse application 
 
 ## 2. Inbox
 
-**Purpose:** To provide a unified inbox where users can manage all customer conversations from every integrated channel in one place.
+**Purpose:** To provide a unified inbox where users can manage all contact conversations from every integrated channel in one place.
 
 **Use Cases:**
-- **View All Conversations:** See a paginated list of all conversations, which can be filtered by channel, read/unread status, date, or searched by customer name/email.
-- **Engage in Real-time Chat:** Select a conversation to view the full message history and send new messages to the customer.
-- **Access Customer Context:** While in a conversation, view the customer's profile, including their contact details, funnel stage, and deal history.
-- **Update Customer Status:** Change a customer's stage in the sales funnel directly from the inbox view.
-- **Create New Deals:** Initiate and create a new sales deal for a customer without leaving the conversation.
+- **View All Conversations:** See a paginated list of all conversations, which can be filtered by channel, read/unread status, date, or searched by contact name/email.
+- **Engage in Real-time Chat:** Select a conversation to view the full message history and send new messages to the contact.
+- **Access Contact Context:** While in a conversation, view the contact's profile, including their details, funnel stage, and deal history.
+- **Update Contact Status:** Change a contact's stage in the sales funnel directly from the inbox view.
+- **Create New Deals:** Initiate and create a new sales deal for a contact without leaving the conversation.
 - **Load More Messages:** For long conversations, load older messages as needed to see the full history.
 
 ## 3. Email
@@ -35,37 +35,43 @@ This document outlines the purpose of each page in the ConnectVerse application 
 - **Mark Emails as Read:** Selecting an email automatically marks it as read.
 - **Search Emails:** Find specific emails using a search bar.
 
-## 4. Customers
+## 4. Contacts
 
-**Purpose:** To act as a Customer Relationship Management (CRM) hub for viewing, managing, and organizing all customer information.
+**Purpose:** To act as a Customer Relationship Management (CRM) hub for viewing, managing, and organizing all contact/lead information.
 
 **Use Cases:**
-- **View and Filter Customer List:** See a paginated list of all customers. Filter the list by source (channel), status, tags, or the date they were added.
-- **Search for Customers:** Quickly find a specific customer using the search bar.
-- **Add a New Customer:** Manually add a new customer by filling out a form with their details.
-- **Edit Existing Customer:** Update the information for any customer.
-- **View Customer Details:** Click on a customer to open a detailed modal view showing their complete profile, deal history, and a link to their conversations.
-- **Bulk Actions:** Select multiple customers to perform bulk actions, such as exporting their data to a CSV file.
+- **View and Filter Contact List:** See a paginated list of all contacts. Filter the list by source (channel), status, tags, or the date they were added.
+- **Search for Contacts:** Quickly find a specific contact using the search bar.
+- **Add a New Contact:** Manually add a new contact by filling out a form with their details.
+- **Edit Existing Contact:** Update the information for any contact.
+- **View Contact Details:** Click on a contact to open a detailed modal view showing their complete profile, deal history, and a link to their conversations.
+- **Bulk Actions:** Select multiple contacts to perform bulk actions, such as exporting their data to a CSV file.
 
 ## 5. Funnel
 
-**Purpose:** To provide a visual, Kanban-style board of the sales funnel, allowing users to track and manage customers as they move through different stages.
+**Purpose:** To provide a visual, Kanban-style board of the sales funnel, allowing users to track and manage contacts as they move through different stages.
 
 **Use Cases:**
-- **Visualize the Sales Pipeline:** See all customers organized into columns representing each stage of the funnel (New, Contacted, Qualified, Demo, Won, Unqualified).
-- **Update Customer Status via Drag-and-Drop:** Move customers between stages by dragging and dropping their cards from one column to another.
-- **View Stage Value:** See the total number of customers and the total monetary value of deals in each stage.
-- **Filter the Funnel View:** Apply filters based on channel, tags, or date to refine the customers shown on the board.
-- **Switch to List View:** Toggle between the Kanban board and a traditional table view of all customers in the funnel.
+- **Visualize the Sales Pipeline:** See all contacts organized into columns representing each stage of the funnel (New, Contacted, Qualified, Demo, Won, Unqualified).
+- **Update Contact Status via Drag-and-Drop:** Move contacts between stages by dragging and dropping their cards from one column to another.
+- **View Stage Value:** See the total number of contacts and the total monetary value of deals in each stage.
+- **Filter the Funnel View:** Apply filters based on channel, tags, or date to refine the contacts shown on the board.
+- **Switch to List View:** Toggle between the Kanban board and a traditional table view of all contacts in the funnel.
 
 ## 6. Integrations
 
 **Purpose:** To allow users to connect and manage their accounts from various messaging platforms.
 
 **Use Cases:**
-- **View Integration Status:** See a list of all supported channels (WhatsApp, Messenger, Instagram, TikTok) and whether they are currently connected or disconnected.
+- **View Integration Status:** See a list of all supported channels (Messenger, Instagram, TikTok) and whether they are currently connected or disconnected.
 - **Connect a New Channel:** Enter an API key for a disconnected channel to enable its integration with ConnectVerse.
 - **Disconnect a Channel:** Remove an existing integration.
+- **Multiple WhatsApp Integrations:** Each commercial (user) can connect their own WhatsApp number via QR code scanning (powered by Baileys, no API key needed). Admins see all WhatsApp integrations; commercials see only their own.
+- **QR Code Connection:** Click "Add WhatsApp" to start a session, scan the displayed QR code with WhatsApp on your phone, and the connection is established automatically.
+- **Auto-Deal Creation:** When a new contact sends a WhatsApp message, a Deal is automatically created for that contact (status: In Progress, amount: 0).
+- **Admin-Only Inbox:** Only admin users can access the unified inbox. Commercials manage deals but do not have inbox access.
+- **Commercial Filter:** Admins can filter inbox conversations by commercial (WhatsApp integration) to see messages for a specific team member.
+- **10-Minute Message Refresh:** The inbox automatically refreshes conversations every 10 minutes.
 
 ## 7. Status
 

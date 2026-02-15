@@ -3,8 +3,8 @@
 
 import { useState, useEffect, Suspense, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { Conversation, Message, Customer, CustomerStatus, Deal, User } from '@/lib/data';
-import { getConversations, markConversationAsRead, updateCustomerStatus, addDealToCustomer, sendMessage } from '@/lib/data';
+import type { Conversation, Message, Customer, CustomerStatus, Deal, User, WhatsAppIntegration } from '@/lib/data';
+import { getConversations, markConversationAsRead, updateCustomerStatus, addDealToCustomer, sendMessage, getWhatsAppIntegrations } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -111,7 +111,7 @@ const ConversationList = ({
                 <div className="p-2">
                     {conversations.map((conv) => {
                       const lastMessage = conv.messages[conv.messages.length - 1];
-                      const snippet = lastMessage.text.length > 30 ? `${lastMessage.text.substring(0, 30)}...` : lastMessage.text;
+                      const snippet = lastMessage?.text?.length > 30 ? `${lastMessage?.text?.substring(0, 30)}...` : lastMessage?.text;
 
                       return (
                         <button
@@ -546,7 +546,24 @@ function InboxPageContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const { user, loading: userLoading } = useAuth();
+  const [commercialFilter, setCommercialFilter] = useState('');
+  const [whatsAppIntegrations, setWhatsAppIntegrations] = useState<WhatsAppIntegration[]>([]);
 
+  // Fetch WhatsApp integrations for filter dropdown
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      getWhatsAppIntegrations().then(setWhatsAppIntegrations).catch(console.error);
+    }
+  }, [user?.role]);
+
+  // 10-minute polling
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchConversations();
+    }, 600_000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchConversations = useCallback(async () => {
     setLoading(true);
@@ -556,7 +573,7 @@ function InboxPageContent() {
         if (search) params.append('search', search);
         if (channelFilter) params.append('channel', channelFilter);
         if (statusFilter) params.append('status', statusFilter);
-        // dateFilter logic can be added here
+        if (commercialFilter) params.append('integrationId', commercialFilter);
         
         const data = await getConversations(params);
         setConversations(data.conversations);
@@ -583,7 +600,7 @@ function InboxPageContent() {
     } finally {
         setLoading(false);
     }
-  }, [currentPage, search, channelFilter, statusFilter, conversationId]);
+  }, [currentPage, search, channelFilter, statusFilter, commercialFilter, conversationId]);
 
   useEffect(() => {
       fetchConversations();
@@ -602,6 +619,7 @@ function InboxPageContent() {
     setChannelFilter('');
     setStatusFilter('');
     setDateFilter(undefined);
+    setCommercialFilter('');
     setCurrentPage(1);
   }
   
@@ -651,6 +669,16 @@ function InboxPageContent() {
   
   if ((loading && conversations.length === 0) || userLoading) return <div>Loading...</div>;
 
+  if (user?.role === 'commercial') {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
+        <MessageSquareDashed className="h-16 w-16 text-muted-foreground/50" />
+        <h3 className="text-xl font-semibold">Access Restricted</h3>
+        <p className="text-muted-foreground">The inbox is only accessible to admin users.</p>
+      </div>
+    );
+  }
+
   const filtersWidget = (
     <Card>
       <CardHeader>
@@ -663,7 +691,7 @@ function InboxPageContent() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search by name or email..." className="pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -688,6 +716,20 @@ function InboxPageContent() {
                     <SelectItem value="unread">Unread</SelectItem>
                 </SelectContent>
             </Select>
+            {whatsAppIntegrations.length > 0 && (
+              <Select value={commercialFilter} onValueChange={setCommercialFilter}>
+                  <SelectTrigger>
+                      <SelectValue placeholder="Commercial" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {whatsAppIntegrations.map((i) => (
+                          <SelectItem key={i.id} value={i.id}>
+                              {i.user?.name || i.name}
+                          </SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+            )}
             <DateRangePicker date={dateFilter} onSelect={setDateFilter} />
         </div>
       </CardContent>
