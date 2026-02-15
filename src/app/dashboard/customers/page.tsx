@@ -42,6 +42,7 @@ const customerSchema = z.object({
   phone: z.string().optional(),
   channel: z.enum(["whatsapp", "messenger", "instagram", "tiktok"]),
   status: z.enum(['new', 'contacted', 'qualified', 'unqualified', 'demo', 'won']),
+  price: z.coerce.number().min(0, "Price must be positive.").optional().or(z.literal('')),
 });
 
 type CustomerFormData = z.infer<typeof customerSchema>;
@@ -71,9 +72,10 @@ function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Cu
       phone: customer?.phone || '',
       channel: customer?.channel || 'whatsapp',
       status: customer?.status || 'new',
+      price: customer?.price ?? '',
     },
   });
-  
+
   useEffect(() => {
     form.reset({
       name: customer?.name || '',
@@ -81,11 +83,17 @@ function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Cu
       phone: customer?.phone || '',
       channel: customer?.channel || 'whatsapp',
       status: customer?.status || 'new',
+      price: customer?.price ?? '',
     });
   }, [customer, form]);
 
   const onSubmit = (data: CustomerFormData) => {
-    onSave(data, customer?.id);
+    const { price, ...rest } = data;
+    const submitData: any = {
+      ...rest,
+      price: price !== '' && price !== undefined ? Number(price) : null,
+    };
+    onSave(submitData, customer?.id);
     toast({
       title: `Customer ${customer?.id ? 'updated' : 'created'}`,
       description: `${data.name} has been successfully ${customer?.id ? 'updated' : 'saved'}.`,
@@ -137,6 +145,19 @@ function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Cu
                             <FormLabel>Phone</FormLabel>
                             <FormControl>
                                 <Input placeholder="e.g. +1-555-1234" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Price</FormLabel>
+                            <FormControl>
+                                <Input type="number" step="0.01" min="0" placeholder="e.g. 1500.00" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -264,7 +285,7 @@ export default function CustomersPage() {
     }
   };
 
-  const handleSaveCustomer = async (data: CustomerFormData, id?: string) => {
+  const handleSaveCustomer = async (data: any, id?: string) => {
     try {
         if (id) {
             await updateCustomer(id, data);

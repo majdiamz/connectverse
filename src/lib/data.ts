@@ -30,6 +30,7 @@ export interface Customer {
   channel: Channel;
   status: CustomerStatus;
   dealName: string;
+  price: number | null;
   dealHistory: Deal[];
 }
 
@@ -39,6 +40,7 @@ export interface NewCustomer {
     phone?: string;
     channel: Channel;
     status: CustomerStatus;
+    price?: number | null;
 }
 
 
