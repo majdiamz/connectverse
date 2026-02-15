@@ -433,6 +433,7 @@ export default function CustomersPage() {
                     <TableHead className="hidden md:table-cell">Phone</TableHead>
                     <TableHead className="hidden md:table-cell">Status</TableHead>
                     <TableHead className="hidden lg:table-cell">Joined</TableHead>
+                    <TableHead className="hidden md:table-cell">Price</TableHead>
                     <TableHead>Tags</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -472,6 +473,9 @@ export default function CustomersPage() {
                             </Badge>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell text-muted-foreground">{customer.joined}</TableCell>
+                        <TableCell className="hidden md:table-cell text-muted-foreground">
+                            {customer.price != null ? `$${customer.price.toLocaleString()}` : '—'}
+                        </TableCell>
                         <TableCell>
                             <div className="flex flex-wrap gap-1">
                             {customer.tags.map((tag) => (
