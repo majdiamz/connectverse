@@ -154,12 +154,39 @@ export const updateCustomerStatus = (customerId: string, status: CustomerStatus)
     }).then(handleResponse);
 
 // Deals
-export const addDealToCustomer = (customerId: string, deal: Omit<Deal, 'id' | 'status' | 'closeDate'>): Promise<Deal> => 
+export const addDealToCustomer = (customerId: string, deal: Omit<Deal, 'id' | 'status' | 'closeDate'>): Promise<Deal> =>
     fetch(`${API_BASE_URL}/customers/${customerId}/deals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(deal),
     }).then(handleResponse);
+
+export interface DealWithContact extends Deal {
+    contact: { id: string; name: string; email: string };
+    createdAt: string;
+}
+
+export const getDeals = (params?: URLSearchParams): Promise<{ deals: DealWithContact[], totalPages: number, currentPage: number, total: number }> =>
+    fetch(`${API_BASE_URL}/deals?${params?.toString() || ''}`).then(handleResponse);
+
+export const createDeal = (deal: { contactId: string; name: string; amount: number }): Promise<DealWithContact> =>
+    fetch(`${API_BASE_URL}/deals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(deal),
+    }).then(handleResponse);
+
+export const updateDeal = (id: string, deal: { name?: string; amount?: number; status?: 'Won' | 'Lost' | 'InProgress' }): Promise<DealWithContact> =>
+    fetch(`${API_BASE_URL}/deals/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(deal),
+    }).then(handleResponse);
+
+export const deleteDeal = (id: string): Promise<void> =>
+    fetch(`${API_BASE_URL}/deals/${id}`, {
+        method: 'DELETE',
+    }).then(res => { if (!res.ok) throw new Error('Failed to delete deal'); });
 
 // Conversations
 export const getConversations = (params?: URLSearchParams): Promise<{ conversations: Conversation[], totalPages: number, currentPage: number }> => 

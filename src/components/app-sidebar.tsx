@@ -24,6 +24,7 @@ import {
   HelpCircle,
   Server,
   Mail,
+  Handshake,
 } from 'lucide-react';
 import { Separator } from './ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -35,6 +36,7 @@ const navItems = [
   { href: '/dashboard/inbox', icon: MessageSquare, label: 'Inbox' },
   { href: '/dashboard/email', icon: Mail, label: 'Email' },
   { href: '/dashboard/customers', icon: Users, label: 'Customers' },
+  { href: '/dashboard/deals', icon: Handshake, label: 'Deals' },
   { href: '/dashboard/funnel', icon: KanbanSquare, label: 'Funnel' },
   { href: '/dashboard/integrations', icon: Plug, label: 'Integrations' },
   { href: '/dashboard/status', icon: Server, label: 'Status' },
