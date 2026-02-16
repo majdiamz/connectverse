@@ -6,7 +6,7 @@ export interface User {
   name: string;
   email: string;
   avatarUrl: string;
-  role: 'admin' | 'commercial';
+  role: 'admin' | 'commercial' | 'super_admin';
 }
 
 export type CustomerStatus = 'new' | 'contacted' | 'qualified' | 'unqualified' | 'demo' | 'won';
@@ -288,3 +288,65 @@ export interface FaqItem {
     answer: string;
 }
 export const getFaqs = (): Promise<FaqItem[]> => fetch(`${API_BASE_URL}/faq`).then(handleResponse);
+
+// Admin - Organization Management
+export interface Organization {
+    id: string;
+    name: string;
+    slug: string;
+    createdAt: string;
+    updatedAt: string;
+    userCount: number;
+}
+
+export interface OrgUser {
+    id: string;
+    name: string;
+    email: string;
+    role: 'admin' | 'commercial';
+    createdAt: string;
+}
+
+export const getOrganizations = (): Promise<Organization[]> =>
+    fetch(`${API_BASE_URL}/admin/organizations`).then(handleResponse);
+
+export const createOrganization = (name: string): Promise<Organization> =>
+    fetch(`${API_BASE_URL}/admin/organizations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+    }).then(handleResponse);
+
+export const updateOrganization = (id: string, name: string): Promise<Organization> =>
+    fetch(`${API_BASE_URL}/admin/organizations/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+    }).then(handleResponse);
+
+export const deleteOrganization = (id: string): Promise<void> =>
+    fetch(`${API_BASE_URL}/admin/organizations/${id}`, {
+        method: 'DELETE',
+    }).then(res => { if (!res.ok) throw new Error('Failed to delete organization'); });
+
+export const getOrgUsers = (orgId: string): Promise<OrgUser[]> =>
+    fetch(`${API_BASE_URL}/admin/organizations/${orgId}/users`).then(handleResponse);
+
+export const createOrgUser = (orgId: string, user: { name: string; email: string; role: string }): Promise<OrgUser> =>
+    fetch(`${API_BASE_URL}/admin/organizations/${orgId}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+    }).then(handleResponse);
+
+export const updateOrgUser = (userId: string, updates: { name?: string; email?: string; role?: string }): Promise<OrgUser> =>
+    fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+    }).then(handleResponse);
+
+export const deleteOrgUser = (userId: string): Promise<void> =>
+    fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+        method: 'DELETE',
+    }).then(res => { if (!res.ok) throw new Error('Failed to delete user'); });
