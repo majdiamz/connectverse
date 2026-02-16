@@ -109,3 +109,11 @@ This document outlines the purpose of each page in the ConnectVerse application 
 - **Manage Organizations (Super Admin):** Super admins see an Organizations tab listing all organizations on the platform with user counts. They can create new organizations, edit organization names, and delete organizations.
 - **Manage Users (Super Admin):** Super admins see a Users tab where they can select an organization and manage its users. They can create new users (with a default password), edit user details and roles (admin or commercial), and delete users.
 - **Role-Based Access:** Admin users see the Business Profile form. Super admins see the Organizations and Users management tabs. Commercial users have no access.
+
+## 11. Deployment
+
+**Purpose:** To provide configuration options for deploying the application in different environments (development vs. production).
+
+**Use Cases:**
+- **Production Clean Deploy (AUTO_CLEAN):** Set the AUTO_CLEAN environment variable to reset the database to a clean state with empty tables and only the super admin user. This allows the super admin to then create organizations and users from scratch via Settings.
+- **Development Seed (AUTO_SEED):** Set the AUTO_SEED environment variable to populate the database with sample data for development and testing purposes.
