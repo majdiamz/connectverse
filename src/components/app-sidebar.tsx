@@ -82,8 +82,10 @@ export function AppSidebar() {
         <SidebarMenu>
           {navItems
             .filter((item) => {
-              // Hide Inbox for commercial users
-              if (item.href === '/dashboard/inbox' && user?.role === 'commercial') return false;
+              if (user?.role === 'commercial') {
+                // Hide Inbox and Dashboard for commercial users
+                if (item.href === '/dashboard/inbox' || item.href === '/dashboard') return false;
+              }
               return true;
             })
             .map((item) => (

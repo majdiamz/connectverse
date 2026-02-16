@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -411,7 +412,16 @@ function UsersTab() {
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const isSuperAdmin = user?.role === 'super_admin';
+
+  useEffect(() => {
+    if (user?.role === 'commercial') {
+      router.replace('/dashboard/customers');
+    }
+  }, [user, router]);
+
+  if (user?.role === 'commercial') return null;
 
   return (
     <div className="space-y-6">

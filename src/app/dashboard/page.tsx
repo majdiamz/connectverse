@@ -32,6 +32,8 @@ import { ChannelIcon } from '@/components/icons';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/use-auth';
 
 const chartConfig = {
   new: {
@@ -52,11 +54,20 @@ const dealsByStageConfig = {
 } satisfies ChartConfig;
 
 export default function DashboardPage() {
+    const router = useRouter();
+    const { user } = useAuth();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [chartData, setChartData] = useState<ConversationTrendPoint[]>([]);
     const [platformStats, setPlatformStats] = useState<PlatformStats[]>([]);
     const [dealsByStageData, setDealsByStageData] = useState<DealStageValue[]>([]);
     const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (user?.role === 'commercial') {
+            router.replace('/dashboard/customers');
+            return;
+        }
+    }, [user, router]);
 
     useEffect(() => {
         const fetchData = async () => {
