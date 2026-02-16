@@ -1,6 +1,6 @@
 
 'use client';
-import { getCustomers, Customer, addCustomer, updateCustomer, Conversation, getConversation } from "@/lib/data";
+import { getCustomers, Customer, addCustomer, updateCustomer, addDealToCustomer, Conversation, getConversation, Deal } from "@/lib/data";
 import {
   Table,
   TableHeader,
@@ -61,6 +61,84 @@ const dealStatusColors: { [key: string]: string } = {
   Lost: 'bg-red-500',
   'In Progress': 'bg-yellow-500',
 };
+
+const dealFormSchema = z.object({
+  name: z.string().min(1, 'Deal name is required.'),
+  amount: z.coerce.number().min(0, 'Amount must be a positive number.'),
+});
+
+type DealFormData = z.infer<typeof dealFormSchema>;
+
+function CreateDealDialog({ customer, onDealCreated }: { customer: Customer, onDealCreated: () => void }) {
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<DealFormData>({
+    resolver: zodResolver(dealFormSchema),
+    defaultValues: { name: '', amount: 0 }
+  });
+
+  const onSubmit = async (data: DealFormData) => {
+    try {
+      await addDealToCustomer(customer.id, data);
+      toast({
+        title: "Deal Created!",
+        description: `${data.name} for $${data.amount.toLocaleString()} has been created for ${customer.name}.`,
+      });
+      reset();
+      setOpen(false);
+      onDealCreated();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create deal.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Create Deal
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogHeader>
+            <DialogTitle>Create New Deal</DialogTitle>
+            <DialogDescription>
+              Create a new deal for {customer.name}. Click save when you&apos;re done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="deal-name" className="text-right">Deal Name</Label>
+              <div className="col-span-3">
+                <Input id="deal-name" {...register("name")} className="w-full" />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+              </div>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="deal-amount" className="text-right">Amount</Label>
+              <div className="col-span-3">
+                <Input id="deal-amount" type="number" {...register("amount")} className="w-full" />
+                {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount.message}</p>}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">Cancel</Button>
+            </DialogClose>
+            <Button type="submit">Save Deal</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function CustomerForm({ customer, onSave, onOpenChange }: { customer: Partial<Customer> | null, onSave: (data: CustomerFormData, id?: string) => void, onOpenChange: (open: boolean) => void }) {
   const { toast } = useToast();
@@ -510,7 +588,10 @@ export default function CustomersPage() {
                     </DialogHeader>
                     <div className="py-4 space-y-6">
                         <div className="space-y-3">
-                            <h3 className="font-semibold flex items-center gap-2"><History className="h-4 w-4" /> Deal History</h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold flex items-center gap-2"><History className="h-4 w-4" /> Deal History</h3>
+                                <CreateDealDialog customer={selectedCustomer} onDealCreated={fetchCustomers} />
+                            </div>
                             <ScrollArea className="h-[200px] border rounded-md">
                                 <Table>
                                     <TableHeader>
